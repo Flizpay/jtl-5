@@ -1,0 +1,22 @@
+{
+  "languages": {
+    "PHP": {
+      "language_servers": [
+        "intelephense",
+        "!phpactor",
+        "!phptools",
+        "!phpantom",
+        "...",
+      ],
+    },
+  },
+  "lsp": {
+    "intelephense": {
+      "settings": {
+        "environment": {
+          "includePaths": ["../jtl-store/shop/includes"],
+        },
+      },
+    },
+  },
+}

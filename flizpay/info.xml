@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jtlshopplugin>
+    <Name>FLIZpay</Name>
+    <Description>FLIZpay – Zahlungen ohne Gebühren, mit Rabatt/Cashback für deine Kundschaft</Description>
+    <Author>FLIZpay GmbH</Author>
+    <URL>https://www.flizpay.de</URL>
+    <XMLVersion>102</XMLVersion>
+    <MinShopVersion>5.3.0</MinShopVersion>
+    <PluginID>flizpay</PluginID>
+    <CreateDate>2026-08-26</CreateDate>
+    <Version>1.0.0</Version>
+    <!-- ExsID wird im JTL-Kundencenter generiert und muss vor dem Extension-Store-Release
+         eingetragen werden:
+    <ExsID>00000000-0000-0000-0000-000000000000</ExsID>
+    -->
+    <Install>
+        <FlushTags>CACHING_GROUP_PLUGIN</FlushTags>
+        <PaymentMethod>
+            <Method>
+                <Name>FLIZpay</Name>
+                <PictureURL>flizpay-logo.svg</PictureURL>
+                <Sort>1</Sort>
+                <SendMail>1</SendMail>
+                <Provider>FLIZpay</Provider>
+                <TSCode>OTHER</TSCode>
+                <PreOrder>0</PreOrder>
+                <Soap>0</Soap>
+                <Curl>1</Curl>
+                <Sockets>0</Sockets>
+                <ClassFile>FlizPay.php</ClassFile>
+                <ClassName>FlizPay</ClassName>
+                <TemplateFile>template/index.tpl</TemplateFile>
+                <MethodLanguage iso="GER">
+                    <Name>FLIZpay</Name>
+                    <ChargeName>FLIZpay</ChargeName>
+                    <InfoText>Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank.</InfoText>
+                </MethodLanguage>
+                <MethodLanguage iso="ENG">
+                    <Name>FLIZpay</Name>
+                    <ChargeName>FLIZpay</ChargeName>
+                    <InfoText>Secure payments in direct collaboration with your bank.</InfoText>
+                </MethodLanguage>
+            </Method>
+        </PaymentMethod>
+        <Locales>
+            <Variable>
+                <Name>flizpayPayNow</Name>
+                <Description>Button auf der Bestellabschlussseite</Description>
+                <VariableLocalized iso="GER">Jetzt mit FLIZpay bezahlen</VariableLocalized>
+                <VariableLocalized iso="ENG">Pay now with FLIZpay</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayRedirectNotice</Name>
+                <Description>Hinweis vor der Weiterleitung zu FLIZpay</Description>
+                <VariableLocalized iso="GER">Du wirst zu FLIZpay weitergeleitet, um die Zahlung abzuschließen.</VariableLocalized>
+                <VariableLocalized iso="ENG">You are being redirected to FLIZpay to complete your payment.</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayCreateError</Name>
+                <Description>Fehler beim Start der Zahlung</Description>
+                <VariableLocalized iso="GER">Die FLIZpay-Zahlung konnte nicht gestartet werden. Bitte versuche es über die Bestellübersicht erneut oder kontaktiere den Shop.</VariableLocalized>
+                <VariableLocalized iso="ENG">The FLIZpay payment could not be started. Please try again from your order overview or contact the shop.</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayProcessingHeading</Name>
+                <Description>Überschrift der Warteseite</Description>
+                <VariableLocalized iso="GER">Zahlung wird bestätigt …</VariableLocalized>
+                <VariableLocalized iso="ENG">Confirming your payment …</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayProcessingText</Name>
+                <Description>Text der Warteseite</Description>
+                <VariableLocalized iso="GER">Sobald deine Zahlung bestätigt ist, geht es automatisch weiter.</VariableLocalized>
+                <VariableLocalized iso="ENG">You will be redirected automatically once your payment is confirmed.</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayProcessingSlow</Name>
+                <Description>Hinweis, wenn die Bestätigung lange dauert</Description>
+                <VariableLocalized iso="GER">Die Bestätigung dauert länger als üblich. Du kannst den Status jederzeit in deiner Bestellübersicht prüfen.</VariableLocalized>
+                <VariableLocalized iso="ENG">Confirmation is taking longer than usual. You can check the status in your order overview at any time.</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayFailedHeading</Name>
+                <Description>Überschrift bei nicht abgeschlossener Zahlung</Description>
+                <VariableLocalized iso="GER">Zahlung nicht abgeschlossen</VariableLocalized>
+                <VariableLocalized iso="ENG">Payment not completed</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayFailedText</Name>
+                <Description>Text bei nicht abgeschlossener Zahlung</Description>
+                <VariableLocalized iso="GER">Deine FLIZpay-Zahlung wurde nicht abgeschlossen. Es wurde nichts abgebucht.</VariableLocalized>
+                <VariableLocalized iso="ENG">Your FLIZpay payment was not completed. Nothing was charged.</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>flizpayToOrderStatus</Name>
+                <Description>Link zur Bestellübersicht</Description>
+                <VariableLocalized iso="GER">Zur Bestellübersicht</VariableLocalized>
+                <VariableLocalized iso="ENG">Go to order status</VariableLocalized>
+            </Variable>
+        </Locales>
+        <Adminmenu>
+            <Settingslink sort="1">
+                <Name>Einstellungen</Name>
+                <Setting type="text" initialValue="" sort="1" conf="N">
+                    <Name>FLIZpay Verbindung</Name>
+                    <ValueName>flizpay_h_api</ValueName>
+                </Setting>
+                <Setting type="password" initialValue="" sort="10" conf="Y">
+                    <Name>API-Key</Name>
+                    <Description>Deinen API-Key findest du im FLIZ-Firmenkonto unter „Installation“. Nach dem Speichern registriert das Plugin automatisch die Webhook-URL und prüft die Verbindung (Tab „Status“).</Description>
+                    <ValueName>flizpay_apiKey</ValueName>
+                </Setting>
+                <Setting type="text" initialValue="" sort="20" conf="N">
+                    <Name>Bestellabwicklung</Name>
+                    <ValueName>flizpay_h_order</ValueName>
+                </Setting>
+                <Setting type="selectbox" initialValue="Y" sort="30" conf="Y">
+                    <Name>Bestellungen bis zur Zahlung vor JTL-Wawi zurückhalten</Name>
+                    <Description>Empfohlen: Die Bestellung wird erst nach Zahlungseingang an JTL-Wawi übergeben. Nur so kann ein FLIZpay-Rabatt (Cashback) vor der Übergabe korrekt in die Bestellung übernommen werden.</Description>
+                    <ValueName>flizpay_holdFromWawi</ValueName>
+                    <SelectboxOptions>
+                        <Option value="Y" sort="1"><![CDATA[Ja (empfohlen)]]></Option>
+                        <Option value="N" sort="2"><![CDATA[Nein]]></Option>
+                    </SelectboxOptions>
+                </Setting>
+                <Setting type="text" initialValue="" sort="50" conf="N">
+                    <Name>Darstellung im Checkout</Name>
+                    <ValueName>flizpay_h_display</ValueName>
+                </Setting>
+                <Setting type="selectbox" initialValue="Y" sort="60" conf="Y">
+                    <Name>FLIZpay-Logo anzeigen</Name>
+                    <ValueName>flizpay_displayLogo</ValueName>
+                    <SelectboxOptions>
+                        <Option value="Y" sort="1"><![CDATA[Ja]]></Option>
+                        <Option value="N" sort="2"><![CDATA[Nein]]></Option>
+                    </SelectboxOptions>
+                </Setting>
+                <Setting type="selectbox" initialValue="Y" sort="70" conf="Y">
+                    <Name>Rabatt im Titel anzeigen („FLIZpay – Bis zu X% Rabatt“)</Name>
+                    <Description>Der Rabattwert wird automatisch aus deinem FLIZ-Firmenkonto übernommen und aktuell gehalten.</Description>
+                    <ValueName>flizpay_displayHeadline</ValueName>
+                    <SelectboxOptions>
+                        <Option value="Y" sort="1"><![CDATA[Ja]]></Option>
+                        <Option value="N" sort="2"><![CDATA[Nein]]></Option>
+                    </SelectboxOptions>
+                </Setting>
+                <Setting type="selectbox" initialValue="Y" sort="80" conf="Y">
+                    <Name>Beschreibung anzeigen</Name>
+                    <ValueName>flizpay_displayDescription</ValueName>
+                    <SelectboxOptions>
+                        <Option value="Y" sort="1"><![CDATA[Ja]]></Option>
+                        <Option value="N" sort="2"><![CDATA[Nein]]></Option>
+                    </SelectboxOptions>
+                </Setting>
+            </Settingslink>
+            <Customlink sort="2">
+                <Name>Status</Name>
+            </Customlink>
+        </Adminmenu>
+    </Install>
+</jtlshopplugin>
