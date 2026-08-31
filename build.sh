@@ -21,6 +21,13 @@ if [ -z "${VERSION}" ]; then
     exit 1
 fi
 
+if command -v msgfmt > /dev/null 2>&1; then
+    echo "==> Compiling translation catalogs"
+    for catalog in locale/*/base.po; do
+        msgfmt --check --output-file="${catalog%.po}.mo" "${catalog}"
+    done
+fi
+
 echo "==> Linting PHP sources"
 find Bootstrap.php Migrations adminmenu frontend lib paymentmethod -name '*.php' -print0 \
     | xargs -0 -n1 php -l > /dev/null
@@ -32,7 +39,7 @@ echo "==> Packaging ${OUTPUT}"
 rm -rf dist
 mkdir -p dist
 mkdir -p "${STAGING_DIR}/${PLUGIN_ID}"
-cp -R Bootstrap.php README.md info.xml Migrations adminmenu frontend lib paymentmethod \
+cp -R Bootstrap.php README.md info.xml Migrations adminmenu frontend lib locale paymentmethod \
     "${STAGING_DIR}/${PLUGIN_ID}/"
 (
     cd "${STAGING_DIR}"

@@ -145,12 +145,12 @@ class ReturnController
             ->assign('flizStatusUrl', self::orderStatusUrl($kBestellung, $orderService))
             ->assign('flizSpinner', $baseUrl !== '' ? $baseUrl . '/frontend/fliz-loading-wheel.svg' : '')
             ->assign('flizLang', [
-                'processingHeading' => FlizPlugin::t('flizpayProcessingHeading'),
-                'processingText'    => FlizPlugin::t('flizpayProcessingText'),
-                'processingSlow'    => FlizPlugin::t('flizpayProcessingSlow'),
-                'failedHeading'     => FlizPlugin::t('flizpayFailedHeading'),
-                'failedText'        => FlizPlugin::t('flizpayFailedText'),
-                'toOrderStatus'     => FlizPlugin::t('flizpayToOrderStatus'),
+                'processingHeading' => \d__('flizpay', 'Confirming your payment ...'),
+                'processingText'    => \d__('flizpay', 'You will be redirected automatically once your payment is confirmed.'),
+                'processingSlow'    => \d__('flizpay', 'Confirmation is taking longer than usual. You can check the status in your order overview at any time.'),
+                'failedHeading'     => \d__('flizpay', 'Payment not completed'),
+                'failedText'        => \d__('flizpay', 'Your FLIZpay payment was not completed. Nothing was charged.'),
+                'toOrderStatus'     => \d__('flizpay', 'Go to order status'),
             ])
             ->getResponse($template);
     }

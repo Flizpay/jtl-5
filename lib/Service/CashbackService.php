@@ -84,8 +84,8 @@ class CashbackService
         $pct = $this->formatPercent($maxPct, $german);
 
         return $german
-            ? 'FLIZpay - Bis zu ' . $pct . '% Rabatt'
-            : 'FLIZpay - Up to ' . $pct . '% Discount';
+            ? \sprintf('FLIZpay - Bis zu %s%% Rabatt', $pct)
+            : \sprintf('FLIZpay - Up to %s%% Discount', $pct);
     }
 
     private function buildDescription(float $first, float $standard, bool $german): string

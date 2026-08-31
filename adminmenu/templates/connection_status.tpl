@@ -7,24 +7,23 @@
 
 <div class="card mb-4">
     <div class="card-header d-flex align-items-center justify-content-between">
-        <span>Verbindung zu FLIZpay</span>
+        <span>{d__('flizpay', 'Connection to FLIZpay')}</span>
         {if $flizConnected}
-            <span class="badge badge-success badge-pill">verbunden</span>
+            <span class="badge badge-success badge-pill">{d__('flizpay', 'connected')}</span>
         {else}
-            <span class="badge badge-danger badge-pill">nicht verbunden</span>
+            <span class="badge badge-danger badge-pill">{d__('flizpay', 'not connected')}</span>
         {/if}
     </div>
     <div class="card-body">
         {if !$flizConnected}
             <div class="alert alert-warning">
-                Solange die Verbindung nicht vollständig ist, wird FLIZpay im Checkout <strong>nicht</strong> angeboten.
+                {d__('flizpay', 'FLIZpay is not offered at checkout until the connection is complete.')}
                 {if !$flizApiKeySet}
-                    Hinterlege zuerst deinen API-Key unter „Einstellungen“.
+                    {d__('flizpay', 'First enter your API key under "Settings".')}
                 {elseif !$flizWebhookKeySet}
-                    Der Webhook-Schlüssel fehlt – bitte die Verbindung neu aufbauen.
+                    {d__('flizpay', 'The webhook key is missing. Please reconnect.')}
                 {elseif !$flizWebhookAlive}
-                    Warten auf die Test-Benachrichtigung von FLIZpay. Der Shop muss dafür öffentlich erreichbar sein
-                    (kein Passwortschutz, keine IP-Sperre, gültiges SSL-Zertifikat).
+                    {d__('flizpay', 'Waiting for the FLIZpay test notification. The shop must be publicly accessible (no password protection, no IP restriction, and a valid SSL certificate).')}
                 {/if}
             </div>
         {/if}
@@ -33,11 +32,11 @@
             <tbody>
                 <tr>
                     <th style="width:32%">API-Key</th>
-                    <td>{if $flizApiKeySet}hinterlegt{else}<em>nicht hinterlegt</em>{/if}</td>
+                    <td>{if $flizApiKeySet}{d__('flizpay', 'set')}{else}<em>{d__('flizpay', 'not set')}</em>{/if}</td>
                 </tr>
                 <tr>
-                    <th>Webhook-Schlüssel</th>
-                    <td>{if $flizWebhookKeySet}vorhanden{else}<em>fehlt</em>{/if}</td>
+                    <th>{d__('flizpay', 'Webhook key')}</th>
+                    <td>{if $flizWebhookKeySet}{d__('flizpay', 'available')}{else}<em>{d__('flizpay', 'missing')}</em>{/if}</td>
                 </tr>
                 <tr>
                     <th>Webhook-URL</th>
@@ -45,44 +44,44 @@
                         <code>{$flizWebhookUrl|escape:'html'}</code>
                         {if $flizWebhookUrl !== $flizExpectedWebhookUrl}
                             <div class="text-danger small mt-1">
-                                Die registrierte URL weicht von der Shop-URL ab
+                                {d__('flizpay', 'The registered URL differs from the shop URL')}
                                 (<code>{$flizExpectedWebhookUrl|escape:'html'}</code>).
-                                Bitte die Verbindung neu aufbauen.
+                                {d__('flizpay', 'Please reconnect.')}
                             </div>
                         {/if}
                     </td>
                 </tr>
                 <tr>
-                    <th>Test-Benachrichtigung</th>
+                    <th>{d__('flizpay', 'Test notification')}</th>
                     <td>
-                        {if $flizWebhookAlive}empfangen{else}<em>ausstehend</em>{/if}
+                        {if $flizWebhookAlive}{d__('flizpay', 'received')}{else}<em>{d__('flizpay', 'pending')}</em>{/if}
                         {if $flizLastWebhookAt}
-                            <span class="text-muted small">(letzte Benachrichtigung: {$flizLastWebhookAt|escape:'html'})</span>
+                            <span class="text-muted small">({d__('flizpay', 'last notification')}: {$flizLastWebhookAt|escape:'html'})</span>
                         {/if}
                     </td>
                 </tr>
                 <tr>
-                    <th>Rabatt / Cashback</th>
+                    <th>{d__('flizpay', 'Discount / cashback')}</th>
                     <td>
                         {if $flizCashback}
-                            Erstkauf: {$flizCashback.first_purchase_amount|string_format:"%.2f"} % ·
-                            Folgekäufe: {$flizCashback.standard_amount|string_format:"%.2f"} %
+                            {d__('flizpay', 'First purchase')}: {$flizCashback.first_purchase_amount|string_format:"%.2f"} % ·
+                            {d__('flizpay', 'Repeat purchases')}: {$flizCashback.standard_amount|string_format:"%.2f"} %
                         {else}
-                            <em>kein aktiver Rabatt</em>
+                            <em>{d__('flizpay', 'no active discount')}</em>
                         {/if}
                         <div class="text-muted small">
-                            Wird aus deinem FLIZ-Firmenkonto übernommen und automatisch aktuell gehalten.
+                            {d__('flizpay', 'Retrieved from your FLIZ company account and kept up to date automatically.')}
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <th>Bestellabwicklung</th>
+                    <th>{d__('flizpay', 'Order processing')}</th>
                     <td>
-                        Wawi-Übergabe erst nach Zahlung: {if $flizHoldFromWawi}ja{else}<strong>nein</strong>{/if}
+                        {d__('flizpay', 'Transfer to Wawi only after payment')}: {if $flizHoldFromWawi}{d__('flizpay', 'yes')}{else}<strong>{d__('flizpay', 'no')}</strong>{/if}
                     </td>
                 </tr>
                 <tr>
-                    <th>Plugin-Version</th>
+                    <th>{d__('flizpay', 'Plugin version')}</th>
                     <td>{$flizVersion|escape:'html'}</td>
                 </tr>
             </tbody>
@@ -92,32 +91,32 @@
         <form method="post" class="d-inline">
             {$flizTokenInput nofilter}
             <input type="hidden" name="flizAction" value="reconnect">
-            <button type="submit" class="btn btn-primary btn-sm">Verbindung neu aufbauen</button>
+            <button type="submit" class="btn btn-primary btn-sm">{d__('flizpay', 'Reconnect')}</button>
         </form>
         <form method="post" class="d-inline ml-2">
             {$flizTokenInput nofilter}
             <input type="hidden" name="flizAction" value="refreshCashback">
-            <button type="submit" class="btn btn-outline-secondary btn-sm">Rabattdaten aktualisieren</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm">{d__('flizpay', 'Refresh discount data')}</button>
         </form>
     </div>
 </div>
 
 <div class="card">
-    <div class="card-header">Offene FLIZpay-Zahlungen</div>
+    <div class="card-header">{d__('flizpay', 'Open FLIZpay payments')}</div>
     <div class="card-body p-0">
         {if $flizOpenPayments|@count === 0}
-            <p class="text-muted p-3 mb-0">Aktuell gibt es keine offenen FLIZpay-Zahlungen.</p>
+            <p class="text-muted p-3 mb-0">{d__('flizpay', 'There are currently no open FLIZpay payments.')}</p>
         {else}
             <div class="table-responsive">
                 <table class="table table-sm mb-0">
                     <thead>
                         <tr>
-                            <th>Bestellung</th>
-                            <th>Erstellt</th>
-                            <th>Versuch</th>
-                            <th>Transaktion</th>
+                            <th>{d__('flizpay', 'Order')}</th>
+                            <th>{d__('flizpay', 'Created')}</th>
+                            <th>{d__('flizpay', 'Attempt')}</th>
+                            <th>{d__('flizpay', 'Transaction')}</th>
                             <th>Status</th>
-                            <th>Betrag</th>
+                            <th>{d__('flizpay', 'Amount')}</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -97,7 +97,7 @@ class FlizPay extends Method
         $kBestellung = (int)$order->kBestellung;
         if ($kBestellung <= 0) {
             FlizPlugin::log('preparePaymentProcess without a saved order — aborting', \LOGLEVEL_ERROR);
-            $smarty->assign('flizError', FlizPlugin::t('flizpayCreateError'));
+            $smarty->assign('flizError', \d__('flizpay', 'The FLIZpay payment could not be started. Please try again from your order overview or contact the shop.'));
 
             return;
         }
@@ -159,8 +159,8 @@ class FlizPay extends Method
             );
 
             $smarty->assign('flizRedirectUrl', $transaction['redirectUrl'])
-                ->assign('flizRedirectNotice', FlizPlugin::t('flizpayRedirectNotice'))
-                ->assign('flizPayNow', FlizPlugin::t('flizpayPayNow'));
+                ->assign('flizRedirectNotice', \d__('flizpay', 'You are being redirected to FLIZpay to complete your payment.'))
+                ->assign('flizPayNow', \d__('flizpay', 'Pay now with FLIZpay'));
 
             if (!\headers_sent()) {
                 \header('Location: ' . $transaction['redirectUrl']);
@@ -172,8 +172,8 @@ class FlizPay extends Method
                 \LOGLEVEL_ERROR,
                 ['order' => $kBestellung, 'error' => $e->getMessage()]
             );
-            $smarty->assign('flizError', FlizPlugin::t('flizpayCreateError'))
-                ->assign('flizToOrderStatus', FlizPlugin::t('flizpayToOrderStatus'))
+            $smarty->assign('flizError', \d__('flizpay', 'The FLIZpay payment could not be started. Please try again from your order overview or contact the shop.'))
+                ->assign('flizToOrderStatus', \d__('flizpay', 'Go to order status'))
                 ->assign('flizStatusUrl', $order->BestellstatusURL ?? '');
         }
     }

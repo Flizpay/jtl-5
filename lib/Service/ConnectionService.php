@@ -59,7 +59,7 @@ class ConnectionService
             return [
                 'success' => false,
                 'ran'     => false,
-                'message' => 'Kein API-Key hinterlegt – FLIZpay ist im Checkout deaktiviert.',
+                'message' => \d__('flizpay', 'No API key is configured. FLIZpay is disabled at checkout.'),
             ];
         }
 
@@ -76,8 +76,7 @@ class ConnectionService
                 return [
                     'success' => true,
                     'ran'     => false,
-                    'message' => 'FLIZpay wurde bereits eingerichtet – es wird noch auf die Test-Benachrichtigung '
-                        . 'gewartet. Der Fortschritt ist im Tab „Status“ sichtbar.',
+                    'message' => \d__('flizpay', 'FLIZpay has already been configured. The test notification is still pending. Progress is visible in the "Status" tab.'),
                 ];
             }
         }
@@ -97,7 +96,7 @@ class ConnectionService
         $registration = $api->registerWebhookUrl($webhookUrl);
         if (!$registration['ok']) {
             return $this->handshakeFailed(
-                'Die Webhook-URL konnte nicht registriert werden.',
+                \d__('flizpay', 'The webhook URL could not be registered.'),
                 $registration['transport'],
                 ['url' => $webhookUrl]
             );
@@ -106,7 +105,7 @@ class ConnectionService
         $keyResult = $api->generateWebhookKey();
         if (!$keyResult['ok']) {
             return $this->handshakeFailed(
-                'Es konnte kein Webhook-Schlüssel erzeugt werden.',
+                \d__('flizpay', 'A webhook key could not be generated.'),
                 $keyResult['transport']
             );
         }
@@ -124,9 +123,10 @@ class ConnectionService
         return [
             'success' => true,
             'ran'     => true,
-            'message' => 'FLIZpay-Verbindung eingerichtet. FLIZpay sendet jetzt eine Test-Benachrichtigung an '
-                . $webhookUrl . ' – der Status ist im Tab „Status“ sichtbar. Die Zahlungsart wird erst nach '
-                . 'erfolgreichem Test im Checkout angezeigt.',
+            'message' => \sprintf(
+                \d__('flizpay', 'FLIZpay connection established. FLIZpay is now sending a test notification to %s. Its status is visible in the "Status" tab. The payment method appears at checkout only after a successful test.'),
+                $webhookUrl
+            ),
         ];
     }
 
@@ -149,8 +149,10 @@ class ConnectionService
             return [
                 'success' => false,
                 'ran'     => true,
-                'message' => 'FLIZpay ist derzeit nicht erreichbar: ' . $reason
-                    . ' Der API-Key bleibt gespeichert. Bitte die Verbindung im Tab „Status“ später erneut aufbauen.',
+                'message' => \sprintf(
+                    \d__('flizpay', 'FLIZpay is currently unavailable: %s The API key remains saved. Please reconnect later from the "Status" tab.'),
+                    $reason
+                ),
             ];
         }
 
@@ -159,8 +161,10 @@ class ConnectionService
         return [
             'success' => false,
             'ran'     => true,
-            'message' => 'FLIZpay-Verbindung fehlgeschlagen: ' . $reason
-                . ' Der API-Key wurde entfernt – bitte Key prüfen und erneut speichern.',
+            'message' => \sprintf(
+                \d__('flizpay', 'FLIZpay connection failed: %s The API key was removed. Please check it and save it again.'),
+                $reason
+            ),
         ];
     }
 }

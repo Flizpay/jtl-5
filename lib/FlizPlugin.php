@@ -89,27 +89,6 @@ final class FlizPlugin
     }
 
     /**
-     * Localized plugin language variable (info.xml <Locales>).
-     */
-    public static function t(string $name): string
-    {
-        static $vars = null;
-        if ($vars === null) {
-            try {
-                $iso = Shop::getLanguageCode() ?: "ger";
-                $vars = PluginHelper::getLanguageVariablesByID(
-                    self::getKPlugin(),
-                    $iso,
-                );
-            } catch (\Throwable) {
-                $vars = [];
-            }
-        }
-
-        return $vars[$name] ?? $name;
-    }
-
-    /**
      * Payment-method log (tzahlungslog, visible in the backend) plus shop log
      * for warnings/errors.
      */

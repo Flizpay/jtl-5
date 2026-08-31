@@ -20,7 +20,7 @@ use Plugin\flizpay\lib\FlizPlugin;
  */
 class DiscountService
 {
-    public const POSITION_NAME = 'FLIZpay Rabatt';
+    private const POSITION_NAME = 'FLIZpay discount';
 
     private DbInterface $db;
 
@@ -56,8 +56,7 @@ class DiscountService
         if ((int)$orderRow->nWawiHold !== 1 || $orderData->cAbgeholt !== 'Y') {
             // Wawi may already own this order — never mutate it, tell the merchant instead.
             $note = \sprintf(
-                'FLIZpay: Rabatt von %s wurde bei der Zahlung gewährt, konnte aber nicht mehr automatisch '
-                . 'übernommen werden. Bitte die Bestellung in JTL-Wawi manuell um den Rabatt anpassen.',
+                \d__('flizpay', 'FLIZpay: A discount of %s was granted during payment but could no longer be applied automatically. Please adjust the order discount manually in JTL-Wawi.'),
                 $this->formatAmount($discountOrderCurrency)
             );
             $this->orderService->appendOrderRemark($kBestellung, $note);
@@ -74,7 +73,7 @@ class DiscountService
         $existing   = $this->db->getSingleObject(
             'SELECT kWarenkorbPos FROM twarenkorbpos
                 WHERE kWarenkorb = :cart AND nPosTyp = :type AND cName = :name',
-            ['cart' => $kWarenkorb, 'type' => \C_WARENKORBPOS_TYP_KUPON, 'name' => self::POSITION_NAME]
+            ['cart' => $kWarenkorb, 'type' => \C_WARENKORBPOS_TYP_KUPON, 'name' => \d__('flizpay', self::POSITION_NAME)]
         );
         if ($existing !== null) {
             return true;
@@ -89,7 +88,7 @@ class DiscountService
                 'kWarenkorb'                => $kWarenkorb,
                 'kArtikel'                  => 0,
                 'kVersandklasse'            => 0,
-                'cName'                     => self::POSITION_NAME,
+                'cName'                     => \d__('flizpay', self::POSITION_NAME),
                 'cLieferstatus'             => '',
                 'cArtNr'                    => '',
                 'cEinheit'                  => '',
@@ -162,6 +161,6 @@ class DiscountService
 
     private function formatAmount(float $amount): string
     {
-        return \number_format($amount, 2, ',', '.') . ' (Bestellwährung)';
+        return \sprintf(\d__('flizpay', '%s (order currency)'), \number_format($amount, 2, ',', '.'));
     }
 }

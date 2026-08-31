@@ -1,0 +1,236 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: FLIZpay 1.0.0\n"
+"PO-Revision-Date: 2026-08-31 00:00+0000\n"
+"Last-Translator: FLIZpay GmbH\n"
+"Language-Team: German\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de_DE\n"
+"X-Domain: flizpay\n"
+
+msgid "Pay now with FLIZpay"
+msgstr "Jetzt mit FLIZpay bezahlen"
+
+msgid "You are being redirected to FLIZpay to complete your payment."
+msgstr "Du wirst zu FLIZpay weitergeleitet, um die Zahlung abzuschließen."
+
+msgid "The FLIZpay payment could not be started. Please try again from your order overview or contact the shop."
+msgstr "Die FLIZpay-Zahlung konnte nicht gestartet werden. Bitte versuche es über die Bestellübersicht erneut oder kontaktiere den Shop."
+
+msgid "Confirming your payment ..."
+msgstr "Zahlung wird bestätigt …"
+
+msgid "You will be redirected automatically once your payment is confirmed."
+msgstr "Sobald deine Zahlung bestätigt ist, geht es automatisch weiter."
+
+msgid "Confirmation is taking longer than usual. You can check the status in your order overview at any time."
+msgstr "Die Bestätigung dauert länger als üblich. Du kannst den Status jederzeit in deiner Bestellübersicht prüfen."
+
+msgid "Payment not completed"
+msgstr "Zahlung nicht abgeschlossen"
+
+msgid "Your FLIZpay payment was not completed. Nothing was charged."
+msgstr "Deine FLIZpay-Zahlung wurde nicht abgeschlossen. Es wurde nichts abgebucht."
+
+msgid "Go to order status"
+msgstr "Zur Bestellübersicht"
+
+msgid "Settings"
+msgstr "Einstellungen"
+
+msgid "FLIZpay connection"
+msgstr "FLIZpay Verbindung"
+
+msgid "You can find your API key in the FLIZ company account under \"Installation\". After saving, the plugin automatically registers the webhook URL and verifies the connection (the \"Status\" tab)."
+msgstr "Deinen API-Key findest du im FLIZ-Firmenkonto unter „Installation“. Nach dem Speichern registriert das Plugin automatisch die Webhook-URL und prüft die Verbindung (Tab „Status“)."
+
+msgid "Order processing"
+msgstr "Bestellabwicklung"
+
+msgid "Hold orders from JTL-Wawi until payment"
+msgstr "Bestellungen bis zur Zahlung vor JTL-Wawi zurückhalten"
+
+msgid "Recommended: The order is transferred to JTL-Wawi only after payment. This is required to apply a FLIZpay discount (cashback) to the order before transfer."
+msgstr "Empfohlen: Die Bestellung wird erst nach Zahlungseingang an JTL-Wawi übergeben. Nur so kann ein FLIZpay-Rabatt (Cashback) vor der Übergabe korrekt in die Bestellung übernommen werden."
+
+msgid "Yes (recommended)"
+msgstr "Ja (empfohlen)"
+
+msgid "No"
+msgstr "Nein"
+
+msgid "Checkout display"
+msgstr "Darstellung im Checkout"
+
+msgid "Show FLIZpay logo"
+msgstr "FLIZpay-Logo anzeigen"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "Show discount in the title (\"FLIZpay - Up to X% discount\")"
+msgstr "Rabatt im Titel anzeigen („FLIZpay – Bis zu X% Rabatt“)"
+
+msgid "The discount value is retrieved from your FLIZ company account and kept up to date automatically."
+msgstr "Der Rabattwert wird automatisch aus deinem FLIZ-Firmenkonto übernommen und aktuell gehalten."
+
+msgid "Show description"
+msgstr "Beschreibung anzeigen"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Connection to FLIZpay"
+msgstr "Verbindung zu FLIZpay"
+
+msgid "connected"
+msgstr "verbunden"
+
+msgid "not connected"
+msgstr "nicht verbunden"
+
+msgid "FLIZpay is not offered at checkout until the connection is complete."
+msgstr "Solange die Verbindung nicht vollständig ist, wird FLIZpay im Checkout nicht angeboten."
+
+msgid "First enter your API key under \"Settings\"."
+msgstr "Hinterlege zuerst deinen API-Key unter „Einstellungen“."
+
+msgid "The webhook key is missing. Please reconnect."
+msgstr "Der Webhook-Schlüssel fehlt – bitte die Verbindung neu aufbauen."
+
+msgid "Waiting for the FLIZpay test notification. The shop must be publicly accessible (no password protection, no IP restriction, and a valid SSL certificate)."
+msgstr "Warten auf die Test-Benachrichtigung von FLIZpay. Der Shop muss dafür öffentlich erreichbar sein (kein Passwortschutz, keine IP-Sperre, gültiges SSL-Zertifikat)."
+
+msgid "set"
+msgstr "hinterlegt"
+
+msgid "not set"
+msgstr "nicht hinterlegt"
+
+msgid "Webhook key"
+msgstr "Webhook-Schlüssel"
+
+msgid "available"
+msgstr "vorhanden"
+
+msgid "missing"
+msgstr "fehlt"
+
+msgid "The registered URL differs from the shop URL"
+msgstr "Die registrierte URL weicht von der Shop-URL ab"
+
+msgid "Please reconnect."
+msgstr "Bitte die Verbindung neu aufbauen."
+
+msgid "Test notification"
+msgstr "Test-Benachrichtigung"
+
+msgid "received"
+msgstr "empfangen"
+
+msgid "pending"
+msgstr "ausstehend"
+
+msgid "last notification"
+msgstr "letzte Benachrichtigung"
+
+msgid "Discount / cashback"
+msgstr "Rabatt / Cashback"
+
+msgid "First purchase"
+msgstr "Erstkauf"
+
+msgid "Repeat purchases"
+msgstr "Folgekäufe"
+
+msgid "no active discount"
+msgstr "kein aktiver Rabatt"
+
+msgid "Retrieved from your FLIZ company account and kept up to date automatically."
+msgstr "Wird aus deinem FLIZ-Firmenkonto übernommen und automatisch aktuell gehalten."
+
+msgid "Transfer to Wawi only after payment"
+msgstr "Wawi-Übergabe erst nach Zahlung"
+
+msgid "yes"
+msgstr "ja"
+
+msgid "no"
+msgstr "nein"
+
+msgid "Plugin version"
+msgstr "Plugin-Version"
+
+msgid "Reconnect"
+msgstr "Verbindung neu aufbauen"
+
+msgid "Refresh discount data"
+msgstr "Rabattdaten aktualisieren"
+
+msgid "Open FLIZpay payments"
+msgstr "Offene FLIZpay-Zahlungen"
+
+msgid "There are currently no open FLIZpay payments."
+msgstr "Aktuell gibt es keine offenen FLIZpay-Zahlungen."
+
+msgid "Order"
+msgstr "Bestellung"
+
+msgid "Created"
+msgstr "Erstellt"
+
+msgid "Attempt"
+msgstr "Versuch"
+
+msgid "Transaction"
+msgstr "Transaktion"
+
+msgid "Amount"
+msgstr "Betrag"
+
+msgid "Security check failed. Please reload the page."
+msgstr "Sicherheitsprüfung fehlgeschlagen. Bitte die Seite neu laden."
+
+msgid "No API key has been configured."
+msgstr "Es ist kein API-Key hinterlegt."
+
+msgid "No active discount is configured. The checkout display has been reset."
+msgstr "Kein aktiver Rabatt hinterlegt – die Darstellung im Checkout wurde zurückgesetzt."
+
+msgid "Discount data has been updated."
+msgstr "Rabattdaten wurden aktualisiert."
+
+msgid "Action failed: %s"
+msgstr "Aktion fehlgeschlagen: %s"
+
+msgid "No API key is configured. FLIZpay is disabled at checkout."
+msgstr "Kein API-Key hinterlegt – FLIZpay ist im Checkout deaktiviert."
+
+msgid "FLIZpay has already been configured. The test notification is still pending. Progress is visible in the \"Status\" tab."
+msgstr "FLIZpay wurde bereits eingerichtet – es wird noch auf die Test-Benachrichtigung gewartet. Der Fortschritt ist im Tab „Status“ sichtbar."
+
+msgid "The webhook URL could not be registered."
+msgstr "Die Webhook-URL konnte nicht registriert werden."
+
+msgid "A webhook key could not be generated."
+msgstr "Es konnte kein Webhook-Schlüssel erzeugt werden."
+
+msgid "FLIZpay connection established. FLIZpay is now sending a test notification to %s. Its status is visible in the \"Status\" tab. The payment method appears at checkout only after a successful test."
+msgstr "FLIZpay-Verbindung eingerichtet. FLIZpay sendet jetzt eine Test-Benachrichtigung an %s – der Status ist im Tab „Status“ sichtbar. Die Zahlungsart wird erst nach erfolgreichem Test im Checkout angezeigt."
+
+msgid "FLIZpay is currently unavailable: %s The API key remains saved. Please reconnect later from the \"Status\" tab."
+msgstr "FLIZpay ist derzeit nicht erreichbar: %s Der API-Key bleibt gespeichert. Bitte die Verbindung im Tab „Status“ später erneut aufbauen."
+
+msgid "FLIZpay connection failed: %s The API key was removed. Please check it and save it again."
+msgstr "FLIZpay-Verbindung fehlgeschlagen: %s Der API-Key wurde entfernt – bitte Key prüfen und erneut speichern."
+
+msgid "FLIZpay discount"
+msgstr "FLIZpay Rabatt"
+
+msgid "FLIZpay: A discount of %s was granted during payment but could no longer be applied automatically. Please adjust the order discount manually in JTL-Wawi."
+msgstr "FLIZpay: Rabatt von %s wurde bei der Zahlung gewährt, konnte aber nicht mehr automatisch übernommen werden. Bitte die Bestellung in JTL-Wawi manuell um den Rabatt anpassen."
+
+msgid "%s (order currency)"
+msgstr "%s (Bestellwährung)"

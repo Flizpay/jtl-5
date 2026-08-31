@@ -75,7 +75,7 @@ class StatusTab
             return [];
         }
         if (!Form::validateToken()) {
-            return [['type' => 'danger', 'text' => 'Sicherheitsprüfung fehlgeschlagen. Bitte die Seite neu laden.']];
+            return [['type' => 'danger', 'text' => \d__('flizpay', 'Security check failed. Please reload the page.')]];
         }
         $messages = [];
 
@@ -84,7 +84,7 @@ class StatusTab
                 case 'reconnect':
                     $apiKey = $this->config->getApiKey();
                     if ($apiKey === '') {
-                        $messages[] = ['type' => 'danger', 'text' => 'Es ist kein API-Key hinterlegt.'];
+                        $messages[] = ['type' => 'danger', 'text' => \d__('flizpay', 'No API key has been configured.')];
                         break;
                     }
                     $result     = (new ConnectionService($this->config))->runHandshake($apiKey);
@@ -94,7 +94,7 @@ class StatusTab
                 case 'refreshCashback':
                     $apiKey = $this->config->getApiKey();
                     if ($apiKey === '') {
-                        $messages[] = ['type' => 'danger', 'text' => 'Es ist kein API-Key hinterlegt.'];
+                        $messages[] = ['type' => 'danger', 'text' => \d__('flizpay', 'No API key has been configured.')];
                         break;
                     }
                     $cashback = (new FlizPayService($apiKey))->fetchCashback();
@@ -102,13 +102,13 @@ class StatusTab
                     $messages[] = [
                         'type' => 'success',
                         'text' => $cashback === null
-                            ? 'Kein aktiver Rabatt hinterlegt – die Darstellung im Checkout wurde zurückgesetzt.'
-                            : 'Rabattdaten wurden aktualisiert.',
+                            ? \d__('flizpay', 'No active discount is configured. The checkout display has been reset.')
+                            : \d__('flizpay', 'Discount data has been updated.'),
                     ];
                     break;
             }
         } catch (\Throwable $e) {
-            $messages[] = ['type' => 'danger', 'text' => 'Aktion fehlgeschlagen: ' . $e->getMessage()];
+            $messages[] = ['type' => 'danger', 'text' => \sprintf(\d__('flizpay', 'Action failed: %s'), $e->getMessage())];
         }
 
         return $messages;

@@ -22,6 +22,13 @@ const C_WARENKORBPOS_TYP_KUPON   = 3;
 
 const ZAHLUNGSART_MAIL_EINGANG = 0x0001;
 
+if (!\function_exists('d__')) {
+    function d__(string $domain, string $message): string
+    {
+        return $message;
+    }
+}
+
 \spl_autoload_register(static function (string $class): void {
     $prefix = 'Plugin\\flizpay\\';
     if (!\str_starts_with($class, $prefix)) {
