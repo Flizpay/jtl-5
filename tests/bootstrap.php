@@ -28,7 +28,7 @@ const ZAHLUNGSART_MAIL_EINGANG = 0x0001;
         return;
     }
     $relative = \substr($class, \strlen($prefix));
-    $file     = __DIR__ . '/../flizpay/' . \str_replace('\\', '/', $relative) . '.php';
+    $file     = __DIR__ . '/../' . \str_replace('\\', '/', $relative) . '.php';
     if (\is_file($file)) {
         require_once $file;
     }

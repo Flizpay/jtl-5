@@ -1,77 +1,99 @@
-# FLIZpay for JTL-Shop 5 — development repository
+# FLIZpay für JTL-Shop 5
 
-The installable plugin lives in [`flizpay/`](flizpay/) — that folder *is* the plugin
-(its name must stay identical to the `<PluginID>` in `info.xml`, since JTL derives the
-PSR-4 namespace root `Plugin\flizpay\` from it). The merchant-facing documentation is
-[`flizpay/README.md`](flizpay/README.md).
+Zahlungen mit FLIZpay direkt im JTL-Shop – gebührenfrei für dich, mit Rabatt/Cashback
+für deine Kundschaft.
 
-## Layout
+- **Voraussetzungen:** JTL-Shop ab 5.3.0, PHP ab 8.1, ausgehende HTTPS-Verbindungen
+  zu `api.flizpay.de`
+- **Währung:** EUR
+- **Bestellablauf:** Die Bestellung wird vor der Zahlung angelegt; die Zahlung wird
+  anschließend auf der FLIZpay-Seite (bzw. in der FLIZpay-App) abgeschlossen.
 
-| Path | Purpose |
+## Entwicklung
+
+Die Plugin-Quellen liegen direkt im Repository-Root. Beim Build werden sie in den von
+JTL-Shop benötigten Archivordner `flizpay/` gepackt. Dessen Name entspricht der
+`<PluginID>` in `info.xml`, aus der JTL den Namespace `Plugin\flizpay\` ableitet.
+
+| Pfad | Zweck |
 |---|---|
-| `flizpay/info.xml` | Manifest: payment method, settings, admin menu |
-| `flizpay/Bootstrap.php` | Hook/route registration and plugin lifecycle |
-| `flizpay/paymentmethod/FlizPay.php` | The payment method (checkout leg) |
-| `flizpay/lib/Api/` | FLIZpay HTTP client and typed API operations |
-| `flizpay/lib/Service/` | Settlement machine, order/discount/cashback/config services |
-| `flizpay/lib/Controller/` | Webhook, customer-return and status-polling endpoints |
-| `flizpay/Migrations/` | Database schema |
-| `tests/` | Logic tests (no shop or composer needed) |
-
-## Build
-
-```bash
-./build.sh          # lints, tests, writes dist/flizpay-<version>.zip
-```
-
-Upload the resulting ZIP in the shop backend under *Plugins → Plugin-Verwaltung → Upload*.
-
-## Tests
+| `info.xml` | Manifest, Zahlungsart, Einstellungen und Admin-Menü |
+| `Bootstrap.php` | Hooks, Routen und Plugin-Lebenszyklus |
+| `paymentmethod/FlizPay.php` | Zahlungsart und Checkout-Ablauf |
+| `lib/Api/` | FLIZpay HTTP-Client und API-Operationen |
+| `lib/Service/` | Abwicklung, Bestellung, Rabatt, Cashback und Konfiguration |
+| `lib/Controller/` | Webhook-, Rückkehr- und Status-Endpunkte |
+| `Migrations/` | Datenbankschema |
+| `tests/` | Logiktests ohne Shop- oder Composer-Abhängigkeit |
 
 ```bash
 php tests/run.php
+./build.sh
 ```
 
-Covers the webhook settlement state machine (validation, idempotency, attempt/retry
-model, concurrency claims) and webhook signature verification. These are pure logic tests with
-in-memory doubles, so they need neither a shop installation nor composer.
+`./build.sh` prüft die PHP-Syntax, führt die Tests aus und erstellt
+`dist/flizpay-<version>.zip`.
 
-## Local development against a real shop
+## Installation
 
-FLIZpay has **no sandbox** — testing requires a real API key and a publicly reachable
-shop, because FLIZpay registers the webhook URL server-side and calls back into it.
+1. Plugin-ZIP im Shop-Backend unter **Plugins → Plugin-Verwaltung → Upload** hochladen
+   und installieren.
+2. Unter **Plugins → FLIZpay → Einstellungen** den **API-Key** eintragen (zu finden im
+   FLIZ-Firmenkonto unter „Installation“) und speichern.
+3. Das Plugin registriert daraufhin automatisch die Webhook-URL bei FLIZpay und holt
+   sich den Webhook-Schlüssel sowie die Rabattdaten.
+4. FLIZpay sendet unmittelbar danach eine Test-Benachrichtigung an den Shop. Im Tab
+   **Status** wird die Verbindung dann als *verbunden* angezeigt.
+5. Die Zahlungsart in **Zahlungsarten** wie gewohnt Kundengruppen/Versandarten zuordnen.
 
-1. Run JTL-Shop 5.3+ locally (PHP 8.1+, MySQL 8).
-2. Expose it under a **stable** public hostname (a named `cloudflared` tunnel or a
-   fixed-domain ngrok). Install the shop *under that hostname* — JTL pins the shop URL
-   in its configuration and the webhook URL is derived from `Shop::getURL()`.
-3. Enter the API key in the plugin settings; the handshake registers
-   `https://<host>/flizpay/webhook` and FLIZpay confirms it with a test notification.
-4. Place test orders with a small amount. Real money moves — there is no refund API, so
-   reversals go through FLIZpay support.
+> **Wichtig:** FLIZpay wird im Checkout erst angeboten, wenn die Test-Benachrichtigung
+> angekommen ist. Der Shop muss dafür öffentlich erreichbar sein – ohne Passwortschutz,
+> ohne IP-Sperre und mit gültigem SSL-Zertifikat. Auf Staging-Systemen mit Basic-Auth
+> funktioniert das nicht.
 
-## Open questions for the FLIZpay backend team
+## Rabatt / Cashback
 
-1. **Webhook signature basis** — the WooCommerce plugin verifies the HMAC over
-   `json_encode(json_decode($body), JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)`
-   rather than the raw body. This plugin accepts both (raw first, re-encoded as
-   fallback); confirm which one the backend actually signs so the fallback can be
-   dropped.
-2. **`source` value** — is a platform identifier wanted for JTL, or does `"plugin"`
-   stay correct?
-3. **One webhook URL per business** — what happens for a merchant running both
-   WooCommerce and JTL-Shop? Does registering the second URL overwrite the first?
-4. **`Idempotency-Key` prefix** — this plugin sends `jtl-<sha256>`; confirm that is fine.
-5. **`X-FLIZpay-Plugin-Version`** — should the JTL plugin report a separate version
-   series so it is distinguishable from the WooCommerce plugin?
-6. **Minimum/maximum transaction amount**, if any.
-7. **Webhook redelivery** — does FLIZpay retry on 5xx/timeout? The plugin answers 200
-   for permanently unprocessable events (with `{"accepted": false, "reason": …}`) and
-   5xx only for transient failures, which assumes retries happen.
-8. **Re-triggering the test webhook** on demand, to support the "reconnect" button.
-9. **When is the `{test}` webhook dispatched?** The handshake registers the webhook URL
-   *before* it fetches the webhook key (same order as the WooCommerce plugin). If the
-   test notification is triggered by URL registration rather than by key generation, it
-   can arrive while the shop still holds the previous key and would be rejected as
-   unsigned. The "Verbindung neu aufbauen" button recovers from that, but the ordering
-   should be confirmed.
+Der Rabatt wird ausschließlich im FLIZ-Firmenkonto gepflegt. Das Plugin übernimmt ihn
+automatisch (beim Speichern der Einstellungen und danach live per Webhook) und zeigt ihn
+im Checkout als „FLIZpay – Bis zu X% Rabatt“ an.
+
+Gewährt FLIZpay bei einer Zahlung einen Rabatt, wird die Bestellung nach dem
+Zahlungseingang um eine Rabattposition ergänzt und die Bestellsumme entsprechend
+korrigiert – **bevor** die Bestellung an JTL-Wawi übergeben wird.
+
+Damit das funktioniert, muss die Einstellung **„Bestellungen bis zur Zahlung vor
+JTL-Wawi zurückhalten“** aktiviert bleiben (Standard). Ist sie deaktiviert, kann ein
+Rabatt nicht mehr automatisch in die Bestellung übernommen werden; das Plugin vermerkt
+ihn dann nur als Hinweis in der Bestellung, damit du ihn in JTL-Wawi manuell anpassen
+kannst.
+
+## Zahlungsbestätigung per Webhook
+
+Zahlungen werden ausschließlich durch signierte Webhooks von FLIZpay bestätigt. Die
+Rückkehr-Seite fragt keinen Zahlungsstatus bei FLIZpay ab; sie liest nur den lokalen
+Status und wartet kurz auf den Webhook.
+
+Eine verlorene Webhook-Benachrichtigung kann deshalb nicht durch den Shop rekonstruiert
+werden. FLIZpay muss fehlgeschlagene Zustellungen erneut senden. Solange kein Webhook
+ankommt, bleibt die Bestellung unbezahlt und bei aktivierter Wawi-Sperre zurückgehalten.
+
+## Was passiert bei fehlgeschlagenen Zahlungen?
+
+Bricht eine Zahlung ab oder schlägt sie fehl, bleibt die Bestellung **offen**, damit die
+Kundschaft sie über die Bestellübersicht erneut bezahlen kann. Das Plugin storniert
+unbezahlte Bestellungen nicht automatisch.
+
+## Rückerstattungen
+
+Rückerstattungen sind nicht über den Shop möglich und werden direkt über FLIZpay
+abgewickelt.
+
+## Fehlersuche
+
+- **Tab „Status“** zeigt Verbindungszustand, registrierte Webhook-URL, Zeitpunkt der
+  letzten Benachrichtigung, Rabattdaten und alle offenen Zahlungen. Die Liste ist
+  schreibgeschützt; Zahlungsstatus werden nur durch Webhooks geändert.
+- **Zahlungs-Log:** Backend → *System → Log* bzw. das Zahlungsart-Log; alle FLIZpay-
+  Ereignisse werden dort mit Bestell- und Transaktions-ID protokolliert.
+- **Nach einem Domain-/Shop-URL-Wechsel** muss die Verbindung im Tab „Status“ einmal neu
+  aufgebaut werden, damit FLIZpay die neue Webhook-URL kennt.
