@@ -151,9 +151,11 @@ class SettingsTab
         $messages = [
             ["type" => "success", "text" => \d__("flizpay", "Settings saved.")],
         ];
-        new CashbackService($this->db, $this->config)->syncPresentation();
+        $cashbackService = new CashbackService($this->db, $this->config);
+        $cashbackService->syncPresentation();
 
-        $result = new ConnectionService($this->config)->onSettingsSaved(
+        $connectionService = new ConnectionService($this->config);
+        $result = $connectionService->onSettingsSaved(
             $this->config->getApiKey(),
         );
         if ($result["message"] !== "") {
