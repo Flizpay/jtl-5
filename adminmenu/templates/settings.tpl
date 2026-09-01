@@ -14,7 +14,7 @@
                            class="form-control"
                            id="flizApiKeyInput"
                            name="flizpay_apiKey"
-                           value="{$flizApiKey|escape:'html'}"
+                           value="{$flizApiKeyMask|escape:'html'}"
                            autocomplete="off"
                            spellcheck="false">
                     <div class="input-group-append">

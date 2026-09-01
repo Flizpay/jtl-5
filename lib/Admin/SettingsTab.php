@@ -51,10 +51,11 @@ class SettingsTab
     {
         $messages = $this->handleAction();
 
+        $apiKey = $this->config->getApiKey();
         $handshakeAt = $this->config->get(ConfigService::KEY_HANDSHAKE_AT);
         $awaitingTest =
             !$this->config->isWebhookAlive() &&
-            $this->config->getApiKey() !== "" &&
+            $apiKey !== "" &&
             $handshakeAt !== null &&
             \time() - \strtotime($handshakeAt) < self::HANDSHAKE_WAIT_SECONDS;
 
@@ -62,8 +63,8 @@ class SettingsTab
             ->assign("flizMessages", $messages)
             ->assign("flizTokenInput", Form::getTokenInput())
             ->assign("flizConnected", $this->config->isConnected())
-            ->assign("flizApiKey", $this->config->getApiKey())
-            ->assign("flizApiKeySet", $this->config->getApiKey() !== "")
+            ->assign("flizApiKeyMask", self::maskApiKey($apiKey))
+            ->assign("flizApiKeySet", $apiKey !== "")
             ->assign(
                 "flizWebhookKeySet",
                 \strlen($this->config->getWebhookKey()) >= 32,
@@ -131,6 +132,10 @@ class SettingsTab
             $value = $_POST[$name] ?? $default;
             if ($name === "flizpay_apiKey") {
                 $value = \trim((string) $value);
+                $stored = $this->config->getApiKey();
+                if ($value === self::maskApiKey($stored)) {
+                    $value = $stored;
+                }
             } else {
                 // The remaining settings are Y/N selects.
                 $value = (string) $value === "N" ? "N" : "Y";
@@ -166,6 +171,23 @@ class SettingsTab
         }
 
         return $messages;
+    }
+
+    /**
+     * Masked value for the API key field, e.g. "••••…••••3e18". The mask is
+     * as long as the stored key; only the last four characters are revealed
+     * so the merchant can tell which key is stored without the full key
+     * ever reaching the browser.
+     */
+    private static function maskApiKey(string $apiKey): string
+    {
+        if ($apiKey === "") {
+            return "";
+        }
+        $suffix = \strlen($apiKey) > 8 ? \substr($apiKey, -4) : "";
+
+        return \str_repeat("\u{2022}", \strlen($apiKey) - \strlen($suffix)) .
+            $suffix;
     }
 
     private function flushPluginCache(): void
