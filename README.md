@@ -44,7 +44,7 @@ catalogs, and creates `dist/flizpay-<version>.zip`.
 3. The plugin automatically registers the webhook URL and retrieves the webhook key
    and current discount information.
 4. FLIZpay immediately sends a test notification to the shop. Once it arrives, the
-   connection is shown as *connected* on the **Status** tab.
+   connection status below the API key field switches to *connected*.
 5. Assign FLIZpay to the required customer groups and shipping methods under
    **Payment methods**.
 
@@ -91,10 +91,10 @@ FLIZpay.
 
 ## Troubleshooting
 
-- The **Status** tab shows the connection state, registered webhook URL, time of the
-  latest notification, discount information, and all open payments. The payment list is
-  read-only; payment states are changed only by webhooks.
+- The **Settings** tab shows the connection state (below the API key field) and all
+  open payments. The payment list is read-only; payment states are changed only by
+  webhooks.
 - **Payment log:** Open **System > Log** in the backend or inspect the payment-method
   log. FLIZpay events are recorded with the corresponding order and transaction IDs.
-- **After changing the domain or shop URL:** Reconnect once from the **Status** tab so
-  FLIZpay receives the new webhook URL.
+- **After changing the domain or shop URL:** Save the plugin settings once — the
+  plugin detects the changed webhook URL and re-registers it at FLIZpay.

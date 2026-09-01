@@ -40,11 +40,8 @@ msgstr "Zur Bestellübersicht"
 msgid "Settings"
 msgstr "Einstellungen"
 
-msgid "FLIZpay connection"
-msgstr "FLIZpay Verbindung"
-
-msgid "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection (the \"Status\" tab)."
-msgstr "Deine API-Key findest du im FLIZ-Firmenkonto unter „FLIZ einrichten“ -> „Plugins“ -> „JTL“. Nach dem Speichern registriert das Plugin automatisch die Webhook-URL und prüft die Verbindung (Tab „Status“)."
+msgid "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection below."
+msgstr "Deinen API-Key findest du im FLIZ-Firmenkonto unter „FLIZ einrichten“ -> „Plugins“ -> „JTL“. Nach dem Speichern registriert das Plugin automatisch die Webhook-URL und prüft die Verbindung direkt darunter."
 
 msgid "Order processing"
 msgstr "Bestellabwicklung"
@@ -79,95 +76,29 @@ msgstr "Der Rabattwert wird automatisch aus deinem FLIZ-Firmenkonto übernommen 
 msgid "Show description"
 msgstr "Beschreibung anzeigen"
 
-msgid "Status"
-msgstr "Status"
-
-msgid "Connection to FLIZpay"
-msgstr "Verbindung zu FLIZpay"
-
-msgid "connected"
-msgstr "verbunden"
-
-msgid "not connected"
-msgstr "nicht verbunden"
-
 msgid "FLIZpay is not offered at checkout until the connection is complete."
 msgstr "Solange die Verbindung nicht vollständig ist, wird FLIZpay im Checkout nicht angeboten."
 
-msgid "First enter your API key under \"Settings\"."
-msgstr "Hinterlege zuerst deinen API-Key unter „Einstellungen“."
+msgid "First enter your API key above and save."
+msgstr "Hinterlege zuerst oben deinen API-Key und speichere."
 
-msgid "The webhook key is missing. Please reconnect."
-msgstr "Der Webhook-Schlüssel fehlt – bitte die Verbindung neu aufbauen."
+msgid "Connection established! Our servers have successfully communicated with your site. You are now ready to accept fee-free payments!"
+msgstr "Verbindung hergestellt! Unsere Server haben erfolgreich mit deinem Shop kommuniziert. Du kannst jetzt gebührenfreie Zahlungen akzeptieren!"
+
+msgid "Show or hide the API key"
+msgstr "API-Key anzeigen oder verbergen"
+
+msgid "Save"
+msgstr "Speichern"
+
+msgid "Settings saved."
+msgstr "Einstellungen gespeichert."
+
+msgid "The webhook key is missing. Please save the settings again."
+msgstr "Der Webhook-Schlüssel fehlt – bitte die Einstellungen erneut speichern."
 
 msgid "Waiting for the FLIZpay test notification. The shop must be publicly accessible (no password protection, no IP restriction, and a valid SSL certificate)."
 msgstr "Warten auf die Test-Benachrichtigung von FLIZpay. Der Shop muss dafür öffentlich erreichbar sein (kein Passwortschutz, keine IP-Sperre, gültiges SSL-Zertifikat)."
-
-msgid "set"
-msgstr "hinterlegt"
-
-msgid "not set"
-msgstr "nicht hinterlegt"
-
-msgid "Webhook key"
-msgstr "Webhook-Schlüssel"
-
-msgid "available"
-msgstr "vorhanden"
-
-msgid "missing"
-msgstr "fehlt"
-
-msgid "The registered URL differs from the shop URL"
-msgstr "Die registrierte URL weicht von der Shop-URL ab"
-
-msgid "Please reconnect."
-msgstr "Bitte die Verbindung neu aufbauen."
-
-msgid "Test notification"
-msgstr "Test-Benachrichtigung"
-
-msgid "received"
-msgstr "empfangen"
-
-msgid "pending"
-msgstr "ausstehend"
-
-msgid "last notification"
-msgstr "letzte Benachrichtigung"
-
-msgid "Discount / cashback"
-msgstr "Rabatt / Cashback"
-
-msgid "First purchase"
-msgstr "Erstkauf"
-
-msgid "Repeat purchases"
-msgstr "Folgekäufe"
-
-msgid "no active discount"
-msgstr "kein aktiver Rabatt"
-
-msgid "Retrieved from your FLIZ company account and kept up to date automatically."
-msgstr "Wird aus deinem FLIZ-Firmenkonto übernommen und automatisch aktuell gehalten."
-
-msgid "Transfer to Wawi only after payment"
-msgstr "Wawi-Übergabe erst nach Zahlung"
-
-msgid "yes"
-msgstr "ja"
-
-msgid "no"
-msgstr "nein"
-
-msgid "Plugin version"
-msgstr "Plugin-Version"
-
-msgid "Reconnect"
-msgstr "Verbindung neu aufbauen"
-
-msgid "Refresh discount data"
-msgstr "Rabattdaten aktualisieren"
 
 msgid "Open FLIZpay payments"
 msgstr "Offene FLIZpay-Zahlungen"
@@ -193,23 +124,14 @@ msgstr "Betrag"
 msgid "Security check failed. Please reload the page."
 msgstr "Sicherheitsprüfung fehlgeschlagen. Bitte die Seite neu laden."
 
-msgid "No API key has been configured."
-msgstr "Es ist kein API-Key hinterlegt."
-
-msgid "No active discount is configured. The checkout display has been reset."
-msgstr "Kein aktiver Rabatt hinterlegt – die Darstellung im Checkout wurde zurückgesetzt."
-
-msgid "Discount data has been updated."
-msgstr "Rabattdaten wurden aktualisiert."
-
 msgid "Action failed: %s"
 msgstr "Aktion fehlgeschlagen: %s"
 
 msgid "No API key is configured. FLIZpay is disabled at checkout."
 msgstr "Kein API-Key hinterlegt – FLIZpay ist im Checkout deaktiviert."
 
-msgid "FLIZpay has already been configured. The test notification is still pending. Progress is visible in the \"Status\" tab."
-msgstr "FLIZpay wurde bereits eingerichtet – es wird noch auf die Test-Benachrichtigung gewartet. Der Fortschritt ist im Tab „Status“ sichtbar."
+msgid "FLIZpay has already been configured. The test notification is still pending. Progress is shown below the API key."
+msgstr "FLIZpay wurde bereits eingerichtet – es wird noch auf die Test-Benachrichtigung gewartet. Der Fortschritt wird unter dem API-Key angezeigt."
 
 msgid "The webhook URL could not be registered."
 msgstr "Die Webhook-URL konnte nicht registriert werden."
@@ -217,11 +139,11 @@ msgstr "Die Webhook-URL konnte nicht registriert werden."
 msgid "A webhook key could not be generated."
 msgstr "Es konnte kein Webhook-Schlüssel erzeugt werden."
 
-msgid "FLIZpay connection established. FLIZpay is now sending a test notification to %s. Its status is visible in the \"Status\" tab. The payment method appears at checkout only after a successful test."
-msgstr "FLIZpay-Verbindung eingerichtet. FLIZpay sendet jetzt eine Test-Benachrichtigung an %s – der Status ist im Tab „Status“ sichtbar. Die Zahlungsart wird erst nach erfolgreichem Test im Checkout angezeigt."
+msgid "FLIZpay connection established. FLIZpay is now sending a test notification to %s. Its status is shown below the API key. The payment method appears at checkout only after a successful test."
+msgstr "FLIZpay-Verbindung eingerichtet. FLIZpay sendet jetzt eine Test-Benachrichtigung an %s – der Status wird unter dem API-Key angezeigt. Die Zahlungsart wird erst nach erfolgreichem Test im Checkout angezeigt."
 
-msgid "FLIZpay is currently unavailable: %s The API key remains saved. Please reconnect later from the \"Status\" tab."
-msgstr "FLIZpay ist derzeit nicht erreichbar: %s Der API-Key bleibt gespeichert. Bitte die Verbindung im Tab „Status“ später erneut aufbauen."
+msgid "FLIZpay is currently unavailable: %s The API key remains saved. Please save the settings again later."
+msgstr "FLIZpay ist derzeit nicht erreichbar: %s Der API-Key bleibt gespeichert. Bitte die Einstellungen später erneut speichern."
 
 msgid "FLIZpay connection failed: %s The API key was removed. Please check it and save it again."
 msgstr "FLIZpay-Verbindung fehlgeschlagen: %s Der API-Key wurde entfernt – bitte Key prüfen und erneut speichern."

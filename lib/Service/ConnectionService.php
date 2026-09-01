@@ -9,7 +9,7 @@ use Plugin\flizpay\lib\Api\FlizPayService;
 use Plugin\flizpay\lib\FlizPlugin;
 
 /**
- * The onboarding handshake (WooCommerce process_admin_options port):
+ * The onboarding handshake:
  *
  *   1. register the shop's webhook URL at FLIZpay (echo-verified)
  *   2. fetch the HMAC webhook key
@@ -28,55 +28,73 @@ class ConnectionService
 
     private CashbackService $cashback;
 
-    public function __construct(?ConfigService $config = null, ?CashbackService $cashback = null)
-    {
-        $this->config   = $config ?? new ConfigService();
+    public function __construct(
+        ?ConfigService $config = null,
+        ?CashbackService $cashback = null,
+    ) {
+        $this->config = $config ?? new ConfigService();
         $this->cashback = $cashback ?? new CashbackService(null, $this->config);
     }
 
     public static function getWebhookUrl(): string
     {
-        $url = \rtrim(Shop::getURL(), '/') . '/flizpay/webhook';
-        if (\stripos($url, 'http') !== 0) {
-            $url = 'https://' . \ltrim($url, '/');
+        $url = \rtrim(Shop::getURL(), "/") . "/flizpay/webhook";
+        if (\stripos($url, "http") !== 0) {
+            $url = "https://" . \ltrim($url, "/");
         }
 
         return $url;
     }
 
     /**
-     * Called from HOOK_PLUGIN_SAVE_OPTIONS with the freshly saved API key.
+     * Called from the admin Settings tab with the freshly saved API key.
      *
      * @return array{success: bool, ran: bool, message: string}
      */
     public function onSettingsSaved(string $apiKey): array
     {
         $apiKey = \trim($apiKey);
-        if ($apiKey === '') {
+        if ($apiKey === "") {
             $this->config->setWebhookAlive(false);
-            $this->config->set(ConfigService::KEY_API_KEY_HASH, '');
+            $this->config->set(ConfigService::KEY_API_KEY_HASH, "");
 
             return [
-                'success' => false,
-                'ran'     => false,
-                'message' => \d__('flizpay', 'No API key is configured. FLIZpay is disabled at checkout.'),
+                "success" => false,
+                "ran" => false,
+                "message" => \d__(
+                    "flizpay",
+                    "No API key is configured. FLIZpay is disabled at checkout.",
+                ),
             ];
         }
 
-        $keyHash = \hash('sha256', $apiKey);
-        if ($this->config->get(ConfigService::KEY_API_KEY_HASH) === $keyHash) {
+        $keyHash = \hash("sha256", $apiKey);
+        $urlUnchanged =
+            $this->config->get(ConfigService::KEY_WEBHOOK_URL) ===
+            self::getWebhookUrl();
+        if (
+            $urlUnchanged &&
+            $this->config->get(ConfigService::KEY_API_KEY_HASH) === $keyHash
+        ) {
             if ($this->config->isConnected()) {
-                return ['success' => true, 'ran' => false, 'message' => ''];
+                return ["success" => true, "ran" => false, "message" => ""];
             }
             // Saving other settings while the test webhook is still on its way
             // must not mint a new webhook key — that would invalidate the
             // signature of the notification already in flight.
             $handshakeAt = $this->config->get(ConfigService::KEY_HANDSHAKE_AT);
-            if ($handshakeAt !== null && (\time() - (int)\strtotime($handshakeAt)) < self::HANDSHAKE_GRACE_SECONDS) {
+            if (
+                $handshakeAt !== null &&
+                \time() - (int) \strtotime($handshakeAt) <
+                    self::HANDSHAKE_GRACE_SECONDS
+            ) {
                 return [
-                    'success' => true,
-                    'ran'     => false,
-                    'message' => \d__('flizpay', 'FLIZpay has already been configured. The test notification is still pending. Progress is visible in the "Status" tab.'),
+                    "success" => true,
+                    "ran" => false,
+                    "message" => \d__(
+                        "flizpay",
+                        "FLIZpay has already been configured. The test notification is still pending. Progress is shown below the API key.",
+                    ),
                 ];
             }
         }
@@ -90,42 +108,55 @@ class ConnectionService
     public function runHandshake(string $apiKey, ?string $keyHash = null): array
     {
         $this->config->setWebhookAlive(false);
-        $api        = new FlizPayService($apiKey);
+        $api = new FlizPayService($apiKey);
         $webhookUrl = self::getWebhookUrl();
 
         $registration = $api->registerWebhookUrl($webhookUrl);
-        if (!$registration['ok']) {
+        if (!$registration["ok"]) {
             return $this->handshakeFailed(
-                \d__('flizpay', 'The webhook URL could not be registered.'),
-                $registration['transport'],
-                ['url' => $webhookUrl]
+                \d__("flizpay", "The webhook URL could not be registered."),
+                $registration["transport"],
+                ["url" => $webhookUrl],
             );
         }
 
         $keyResult = $api->generateWebhookKey();
-        if (!$keyResult['ok']) {
+        if (!$keyResult["ok"]) {
             return $this->handshakeFailed(
-                \d__('flizpay', 'A webhook key could not be generated.'),
-                $keyResult['transport']
+                \d__("flizpay", "A webhook key could not be generated."),
+                $keyResult["transport"],
             );
         }
 
-        $this->config->set(ConfigService::KEY_WEBHOOK_KEY, $keyResult['key']);
+        $this->config->set(ConfigService::KEY_WEBHOOK_KEY, $keyResult["key"]);
         $this->config->set(ConfigService::KEY_WEBHOOK_URL, $webhookUrl);
-        $this->config->set(ConfigService::KEY_API_KEY_HASH, $keyHash ?? \hash('sha256', $apiKey));
-        $this->config->set(ConfigService::KEY_HANDSHAKE_AT, \date('Y-m-d H:i:s'));
+        $this->config->set(
+            ConfigService::KEY_API_KEY_HASH,
+            $keyHash ?? \hash("sha256", $apiKey),
+        );
+        $this->config->set(
+            ConfigService::KEY_HANDSHAKE_AT,
+            \date("Y-m-d H:i:s"),
+        );
 
         // Cashback is optional — a missing configuration must not fail the handshake.
         $this->cashback->update($api->fetchCashback());
 
-        FlizPlugin::log('handshake completed, waiting for test webhook', \LOGLEVEL_NOTICE, ['url' => $webhookUrl]);
+        FlizPlugin::log(
+            "handshake completed, waiting for test webhook",
+            \LOGLEVEL_NOTICE,
+            ["url" => $webhookUrl],
+        );
 
         return [
-            'success' => true,
-            'ran'     => true,
-            'message' => \sprintf(
-                \d__('flizpay', 'FLIZpay connection established. FLIZpay is now sending a test notification to %s. Its status is visible in the "Status" tab. The payment method appears at checkout only after a successful test.'),
-                $webhookUrl
+            "success" => true,
+            "ran" => true,
+            "message" => \sprintf(
+                \d__(
+                    "flizpay",
+                    "FLIZpay connection established. FLIZpay is now sending a test notification to %s. Its status is shown below the API key. The payment method appears at checkout only after a successful test.",
+                ),
+                $webhookUrl,
             ),
         ];
     }
@@ -137,21 +168,27 @@ class ConnectionService
      *
      * @return array{success: bool, ran: bool, message: string}
      */
-    private function handshakeFailed(string $reason, bool $transport, array $context = []): array
-    {
+    private function handshakeFailed(
+        string $reason,
+        bool $transport,
+        array $context = [],
+    ): array {
         FlizPlugin::log(
-            'handshake failed: ' . $reason,
+            "handshake failed: " . $reason,
             \LOGLEVEL_ERROR,
-            $context + ['transport' => $transport]
+            $context + ["transport" => $transport],
         );
 
         if ($transport) {
             return [
-                'success' => false,
-                'ran'     => true,
-                'message' => \sprintf(
-                    \d__('flizpay', 'FLIZpay is currently unavailable: %s The API key remains saved. Please reconnect later from the "Status" tab.'),
-                    $reason
+                "success" => false,
+                "ran" => true,
+                "message" => \sprintf(
+                    \d__(
+                        "flizpay",
+                        "FLIZpay is currently unavailable: %s The API key remains saved. Please save the settings again later.",
+                    ),
+                    $reason,
                 ),
             ];
         }
@@ -159,11 +196,14 @@ class ConnectionService
         $this->config->wipeApiKey();
 
         return [
-            'success' => false,
-            'ran'     => true,
-            'message' => \sprintf(
-                \d__('flizpay', 'FLIZpay connection failed: %s The API key was removed. Please check it and save it again.'),
-                $reason
+            "success" => false,
+            "ran" => true,
+            "message" => \sprintf(
+                \d__(
+                    "flizpay",
+                    "FLIZpay connection failed: %s The API key was removed. Please check it and save it again.",
+                ),
+                $reason,
             ),
         ];
     }

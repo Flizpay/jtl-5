@@ -46,69 +46,8 @@
             </Method>
         </PaymentMethod>
         <Adminmenu>
-            <Settingslink sort="1">
+            <Customlink sort="1">
                 <Name>Settings</Name>
-                <Setting type="text" initialValue="" sort="1" conf="N">
-                    <Name>FLIZpay connection</Name>
-                    <ValueName>flizpay_h_api</ValueName>
-                </Setting>
-                <Setting type="password" initialValue="" sort="10" conf="Y">
-                    <Name>API-Key</Name>
-                    <Description
-                    >You can find your API key in the FLIZ company account under "Set up FLIZ" -> "Plugins" -> "JTL". After saving, the plugin automatically registers the webhook URL and verifies the connection (the "Status" tab).</Description>
-                    <ValueName>flizpay_apiKey</ValueName>
-                </Setting>
-                <Setting type="text" initialValue="" sort="20" conf="N">
-                    <Name>Order processing</Name>
-                    <ValueName>flizpay_h_order</ValueName>
-                </Setting>
-                <Setting type="selectbox" initialValue="Y" sort="30" conf="Y">
-                    <Name>Hold orders from JTL-Wawi until payment</Name>
-                    <Description
-                    >Recommended: The order is transferred to JTL-Wawi only after payment. This is required to apply a FLIZpay discount (cashback) to the order before transfer.</Description>
-                    <ValueName>flizpay_holdFromWawi</ValueName>
-                    <SelectboxOptions>
-                        <Option
-                            value="Y"
-                            sort="1"
-                        ><![CDATA[Yes (recommended)]]></Option>
-                        <Option value="N" sort="2"><![CDATA[No]]></Option>
-                    </SelectboxOptions>
-                </Setting>
-                <Setting type="text" initialValue="" sort="50" conf="N">
-                    <Name>Checkout display</Name>
-                    <ValueName>flizpay_h_display</ValueName>
-                </Setting>
-                <Setting type="selectbox" initialValue="Y" sort="60" conf="Y">
-                    <Name>Show FLIZpay logo</Name>
-                    <ValueName>flizpay_displayLogo</ValueName>
-                    <SelectboxOptions>
-                        <Option value="Y" sort="1"><![CDATA[Yes]]></Option>
-                        <Option value="N" sort="2"><![CDATA[No]]></Option>
-                    </SelectboxOptions>
-                </Setting>
-                <Setting type="selectbox" initialValue="Y" sort="70" conf="Y">
-                    <Name
-                    >Show discount in the title ("FLIZpay - Up to X% discount")</Name>
-                    <Description
-                    >The discount value is retrieved from your FLIZ company account and kept up to date automatically.</Description>
-                    <ValueName>flizpay_displayHeadline</ValueName>
-                    <SelectboxOptions>
-                        <Option value="Y" sort="1"><![CDATA[Yes]]></Option>
-                        <Option value="N" sort="2"><![CDATA[No]]></Option>
-                    </SelectboxOptions>
-                </Setting>
-                <Setting type="selectbox" initialValue="Y" sort="80" conf="Y">
-                    <Name>Show description</Name>
-                    <ValueName>flizpay_displayDescription</ValueName>
-                    <SelectboxOptions>
-                        <Option value="Y" sort="1"><![CDATA[Yes]]></Option>
-                        <Option value="N" sort="2"><![CDATA[No]]></Option>
-                    </SelectboxOptions>
-                </Setting>
-            </Settingslink>
-            <Customlink sort="2">
-                <Name>Status</Name>
             </Customlink>
         </Adminmenu>
     </Install>
