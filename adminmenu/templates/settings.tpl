@@ -64,22 +64,6 @@
     </div>
 
     <div class="card mb-4">
-        <div class="card-header">{d__('flizpay', 'Order processing')}</div>
-        <div class="card-body">
-            <div class="form-group mb-0">
-                <label for="flizHoldFromWawiInput">{d__('flizpay', 'Hold orders from JTL-Wawi until payment')}</label>
-                <select class="custom-select" id="flizHoldFromWawiInput" name="flizpay_holdFromWawi">
-                    <option value="Y"{if $flizHoldFromWawi} selected{/if}>{d__('flizpay', 'Yes (recommended)')}</option>
-                    <option value="N"{if !$flizHoldFromWawi} selected{/if}>{d__('flizpay', 'No')}</option>
-                </select>
-                <small class="form-text text-muted">
-                    {d__('flizpay', 'Recommended: The order is transferred to JTL-Wawi only after payment. This is required to apply a FLIZpay discount (cashback) to the order before transfer.')}
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <div class="card mb-4">
         <div class="card-header">{d__('flizpay', 'Checkout display')}</div>
         <div class="card-body">
             <div class="form-group">

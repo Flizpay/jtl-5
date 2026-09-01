@@ -43,18 +43,6 @@ msgstr "Settings"
 msgid "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection below."
 msgstr "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection below."
 
-msgid "Order processing"
-msgstr "Order processing"
-
-msgid "Hold orders from JTL-Wawi until payment"
-msgstr "Hold orders from JTL-Wawi until payment"
-
-msgid "Recommended: The order is transferred to JTL-Wawi only after payment. This is required to apply a FLIZpay discount (cashback) to the order before transfer."
-msgstr "Recommended: The order is transferred to JTL-Wawi only after payment. This is required to apply a FLIZpay discount (cashback) to the order before transfer."
-
-msgid "Yes (recommended)"
-msgstr "Yes (recommended)"
-
 msgid "No"
 msgstr "No"
 

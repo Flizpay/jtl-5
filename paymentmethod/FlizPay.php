@@ -213,12 +213,11 @@ class FlizPay extends Method
 
     /**
      * True when this order is currently withheld from JTL-Wawi by the plugin.
+     * Rechecked live because a pay-again order may already have been picked up
+     * by Wawi — the plugin must not flip cAbgeholt for such orders later.
      */
     private function isHeldFromWawi(int $kBestellung): bool
     {
-        if (!$this->config->holdFromWawi()) {
-            return false;
-        }
         $row = $this->getDB()->getSingleObject(
             'SELECT cAbgeholt FROM tbestellung WHERE kBestellung = :oid',
             ['oid' => $kBestellung]

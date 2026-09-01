@@ -63,10 +63,10 @@ When FLIZpay grants a discount for a payment, the plugin adds a discount item to
 order and corrects the order total after payment, before the order is transferred to
 JTL-Wawi.
 
-For this to work, **Hold orders from JTL-Wawi until payment** must remain enabled. This
-setting is enabled by default. If it is disabled, the plugin cannot apply the discount
-to the order automatically. Instead, it adds a note to the order so the discount can be
-applied manually in JTL-Wawi.
+To make this possible, FLIZpay orders are always held back from JTL-Wawi until the
+payment is confirmed. In the rare case where an order has already been picked up by
+JTL-Wawi before the discount arrives, the plugin adds a note to the order so the
+discount can be applied manually in JTL-Wawi.
 
 ## Payment confirmation by webhook
 
@@ -75,8 +75,8 @@ page does not request the payment status from FLIZpay. It only reads the locally
 status and briefly waits for the webhook.
 
 The shop cannot reconstruct a lost webhook notification. FLIZpay must retry failed
-deliveries. Until the webhook arrives, the order remains unpaid and, when the JTL-Wawi
-hold is enabled, is not transferred to JTL-Wawi.
+deliveries. Until the webhook arrives, the order remains unpaid and is not transferred
+to JTL-Wawi.
 
 ## Failed or cancelled payments
 

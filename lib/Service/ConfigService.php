@@ -131,11 +131,6 @@ class ConfigService
         return \trim((string)($this->getMerchantSetting('flizpay_apiKey') ?? ''));
     }
 
-    public function holdFromWawi(): bool
-    {
-        return ($this->getMerchantSetting('flizpay_holdFromWawi') ?? 'Y') !== 'N';
-    }
-
     public function displayLogo(): bool
     {
         return ($this->getMerchantSetting('flizpay_displayLogo') ?? 'Y') !== 'N';

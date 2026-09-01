@@ -54,10 +54,11 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
         );
 
         // Hold new FLIZpay orders back from JTL-Wawi until payment settles, so
-        // a cashback discount can still be written into the order.
+        // unpaid orders never reach Wawi and a cashback discount can still be
+        // written into the order. Released in OrderService::releaseWawiHold().
         $dispatcher->listen(
             "shop.hook." . \HOOK_BESTELLABSCHLUSS_INC_BESTELLUNGINDB,
-            function (array $args): void {
+            static function (array $args): void {
                 $order = $args["oBestellung"] ?? null;
                 if (!\is_object($order)) {
                     return;
@@ -65,8 +66,7 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
                 $methodID = FlizPlugin::getPaymentMethodId();
                 if (
                     $methodID > 0 &&
-                    (int) ($order->kZahlungsart ?? 0) === $methodID &&
-                    (new ConfigService($this->getDB()))->holdFromWawi()
+                    (int) ($order->kZahlungsart ?? 0) === $methodID
                 ) {
                     $order->cAbgeholt = "Y";
                 }

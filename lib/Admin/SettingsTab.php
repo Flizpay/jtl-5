@@ -30,7 +30,6 @@ class SettingsTab
     /** ValueName => default of every merchant setting owned by this form. */
     private const SETTINGS = [
         "flizpay_apiKey" => "",
-        "flizpay_holdFromWawi" => "Y",
         "flizpay_displayLogo" => "Y",
         "flizpay_displayHeadline" => "Y",
         "flizpay_displayDescription" => "Y",
@@ -70,7 +69,6 @@ class SettingsTab
                 \strlen($this->config->getWebhookKey()) >= 32,
             )
             ->assign("flizWebhookAlive", $this->config->isWebhookAlive())
-            ->assign("flizHoldFromWawi", $this->config->holdFromWawi())
             ->assign("flizDisplayLogo", $this->config->displayLogo())
             ->assign("flizDisplayHeadline", $this->config->displayHeadline())
             ->assign(
