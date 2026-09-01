@@ -43,8 +43,8 @@ msgstr "Settings"
 msgid "FLIZpay connection"
 msgstr "FLIZpay connection"
 
-msgid "You can find your API key in the FLIZ company account under \"Installation\". After saving, the plugin automatically registers the webhook URL and verifies the connection (the \"Status\" tab)."
-msgstr "You can find your API key in the FLIZ company account under \"Installation\". After saving, the plugin automatically registers the webhook URL and verifies the connection (the \"Status\" tab)."
+msgid "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection (the \"Status\" tab)."
+msgstr "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection (the \"Status\" tab)."
 
 msgid "Order processing"
 msgstr "Order processing"

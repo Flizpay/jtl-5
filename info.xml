@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <jtlshopplugin>
     <Name>FLIZpay</Name>
-    <Description>FLIZpay - fee-free payments with discounts/cashback for your customers</Description>
+    <Description
+    >FLIZpay - fee-free payments with discounts/cashback for your customers</Description>
     <Author>FLIZpay GmbH</Author>
     <URL>https://www.flizpay.de</URL>
     <XMLVersion>102</XMLVersion>
@@ -9,8 +10,8 @@
     <PluginID>flizpay</PluginID>
     <CreateDate>2026-08-26</CreateDate>
     <Version>1.0.0</Version>
-    <!-- ExsID wird im JTL-Kundencenter generiert und muss vor dem Extension-Store-Release
-         eingetragen werden:
+    <!--
+    // The ExsID is generated in the JTL customer center and must be entered before the extension store release.
     <ExsID>00000000-0000-0000-0000-000000000000</ExsID>
     -->
     <Install>
@@ -33,12 +34,14 @@
                 <MethodLanguage iso="GER">
                     <Name>FLIZpay</Name>
                     <ChargeName>FLIZpay</ChargeName>
-                    <InfoText>Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank.</InfoText>
+                    <InfoText
+                    >Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank.</InfoText>
                 </MethodLanguage>
                 <MethodLanguage iso="ENG">
                     <Name>FLIZpay</Name>
                     <ChargeName>FLIZpay</ChargeName>
-                    <InfoText>Secure payments in direct collaboration with your bank.</InfoText>
+                    <InfoText
+                    >Secure payments in direct collaboration with your bank.</InfoText>
                 </MethodLanguage>
             </Method>
         </PaymentMethod>
@@ -51,7 +54,8 @@
                 </Setting>
                 <Setting type="password" initialValue="" sort="10" conf="Y">
                     <Name>API-Key</Name>
-                    <Description>You can find your API key in the FLIZ company account under "Installation". After saving, the plugin automatically registers the webhook URL and verifies the connection (the "Status" tab).</Description>
+                    <Description
+                    >You can find your API key in the FLIZ company account under "Set up FLIZ" -> "Plugins" -> "JTL". After saving, the plugin automatically registers the webhook URL and verifies the connection (the "Status" tab).</Description>
                     <ValueName>flizpay_apiKey</ValueName>
                 </Setting>
                 <Setting type="text" initialValue="" sort="20" conf="N">
@@ -60,10 +64,14 @@
                 </Setting>
                 <Setting type="selectbox" initialValue="Y" sort="30" conf="Y">
                     <Name>Hold orders from JTL-Wawi until payment</Name>
-                    <Description>Recommended: The order is transferred to JTL-Wawi only after payment. This is required to apply a FLIZpay discount (cashback) to the order before transfer.</Description>
+                    <Description
+                    >Recommended: The order is transferred to JTL-Wawi only after payment. This is required to apply a FLIZpay discount (cashback) to the order before transfer.</Description>
                     <ValueName>flizpay_holdFromWawi</ValueName>
                     <SelectboxOptions>
-                        <Option value="Y" sort="1"><![CDATA[Yes (recommended)]]></Option>
+                        <Option
+                            value="Y"
+                            sort="1"
+                        ><![CDATA[Yes (recommended)]]></Option>
                         <Option value="N" sort="2"><![CDATA[No]]></Option>
                     </SelectboxOptions>
                 </Setting>
@@ -80,8 +88,10 @@
                     </SelectboxOptions>
                 </Setting>
                 <Setting type="selectbox" initialValue="Y" sort="70" conf="Y">
-                    <Name>Show discount in the title ("FLIZpay - Up to X% discount")</Name>
-                    <Description>The discount value is retrieved from your FLIZ company account and kept up to date automatically.</Description>
+                    <Name
+                    >Show discount in the title ("FLIZpay - Up to X% discount")</Name>
+                    <Description
+                    >The discount value is retrieved from your FLIZ company account and kept up to date automatically.</Description>
                     <ValueName>flizpay_displayHeadline</ValueName>
                     <SelectboxOptions>
                         <Option value="Y" sort="1"><![CDATA[Yes]]></Option>

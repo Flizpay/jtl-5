@@ -6,6 +6,7 @@ namespace Plugin\flizpay;
 
 use JTL\Events\Dispatcher;
 use JTL\Plugin\Bootstrapper;
+use JTL\Plugin\BootstrapperInterface;
 use JTL\Router\Router;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
@@ -18,58 +19,87 @@ use Plugin\flizpay\lib\Service\CashbackService;
 use Plugin\flizpay\lib\Service\ConfigService;
 use Plugin\flizpay\lib\Service\ConnectionService;
 
-class Bootstrap extends Bootstrapper
+class Bootstrap extends Bootstrapper implements BootstrapperInterface
 {
     public function boot(Dispatcher $dispatcher)
     {
         parent::boot($dispatcher);
 
         // Webhook, customer return and status polling endpoints.
-        $dispatcher->listen('shop.hook.' . \HOOK_ROUTER_PRE_DISPATCH, static function (array $args): void {
-            /** @var Router $router */
-            $router = $args['router'] ?? null;
-            if ($router === null) {
-                return;
-            }
-            $router->addRoute('/flizpay/webhook', [WebhookController::class, 'handle'], 'flizpayWebhook', ['POST']);
-            $router->addRoute('/flizpay/return', [ReturnController::class, 'handle'], 'flizpayReturn', ['GET']);
-            $router->addRoute('/flizpay/status', [StatusController::class, 'handle'], 'flizpayStatus', ['GET']);
-        });
+        $dispatcher->listen(
+            "shop.hook." . \HOOK_ROUTER_PRE_DISPATCH,
+            static function (array $args): void {
+                /** @var Router $router */
+                $router = $args["router"] ?? null;
+                if ($router === null) {
+                    return;
+                }
+                $router->addRoute(
+                    "/flizpay/webhook",
+                    [WebhookController::class, "handle"],
+                    "flizpayWebhook",
+                    ["POST"],
+                );
+                $router->addRoute(
+                    "/flizpay/return",
+                    [ReturnController::class, "handle"],
+                    "flizpayReturn",
+                    ["GET"],
+                );
+                $router->addRoute(
+                    "/flizpay/status",
+                    [StatusController::class, "handle"],
+                    "flizpayStatus",
+                    ["GET"],
+                );
+            },
+        );
 
         // Hold new FLIZpay orders back from JTL-Wawi until payment settles, so
         // a cashback discount can still be written into the order.
-        $dispatcher->listen('shop.hook.' . \HOOK_BESTELLABSCHLUSS_INC_BESTELLUNGINDB, function (array $args): void {
-            $order = $args['oBestellung'] ?? null;
-            if (!\is_object($order)) {
-                return;
-            }
-            $methodID = FlizPlugin::getPaymentMethodId();
-            if ($methodID > 0
-                && (int)($order->kZahlungsart ?? 0) === $methodID
-                && (new ConfigService($this->getDB()))->holdFromWawi()
-            ) {
-                $order->cAbgeholt = 'Y';
-            }
-        });
+        $dispatcher->listen(
+            "shop.hook." . \HOOK_BESTELLABSCHLUSS_INC_BESTELLUNGINDB,
+            function (array $args): void {
+                $order = $args["oBestellung"] ?? null;
+                if (!\is_object($order)) {
+                    return;
+                }
+                $methodID = FlizPlugin::getPaymentMethodId();
+                if (
+                    $methodID > 0 &&
+                    (int) ($order->kZahlungsart ?? 0) === $methodID &&
+                    (new ConfigService($this->getDB()))->holdFromWawi()
+                ) {
+                    $order->cAbgeholt = "Y";
+                }
+            },
+        );
 
         // Onboarding handshake when the merchant saves the plugin settings.
-        $dispatcher->listen('shop.hook.' . \HOOK_PLUGIN_SAVE_OPTIONS, function (array $args): void {
-            $plugin = $args['plugin'] ?? null;
-            if (!\is_object($plugin) || $plugin->getPluginID() !== FlizPlugin::PLUGIN_ID) {
+        $dispatcher->listen("shop.hook." . \HOOK_PLUGIN_SAVE_OPTIONS, function (
+            array $args,
+        ): void {
+            $plugin = $args["plugin"] ?? null;
+            if (
+                !\is_object($plugin) ||
+                $plugin->getPluginID() !== FlizPlugin::PLUGIN_ID
+            ) {
                 return;
             }
             $config = new ConfigService($this->getDB());
             (new CashbackService($this->getDB(), $config))->syncPresentation();
 
-            $result = (new ConnectionService($config))->onSettingsSaved($config->getApiKey());
-            if ($result['message'] === '') {
+            $result = (new ConnectionService($config))->onSettingsSaved(
+                $config->getApiKey(),
+            );
+            if ($result["message"] === "") {
                 return;
             }
             $alerts = Shop::Container()->getAlertService();
-            if ($result['success']) {
-                $alerts->addInfo($result['message'], 'flizpayConnection');
+            if ($result["success"]) {
+                $alerts->addInfo($result["message"], "flizpayConnection");
             } else {
-                $alerts->addDanger($result['message'], 'flizpayConnection');
+                $alerts->addDanger($result["message"], "flizpayConnection");
             }
         });
     }
@@ -96,12 +126,15 @@ class Bootstrap extends Bootstrapper
     {
         parent::updated($oldVersion, $newVersion);
         $config = new ConfigService($this->getDB());
-        if ($config->getApiKey() === '') {
+        if ($config->getApiKey() === "") {
             return;
         }
         // Report the running plugin version on update.
         if ((new FlizPayService($config->getApiKey()))->reportVersion()) {
-            $config->set(ConfigService::KEY_REPORTED_VERSION, FlizPlugin::getVersion());
+            $config->set(
+                ConfigService::KEY_REPORTED_VERSION,
+                FlizPlugin::getVersion(),
+            );
         }
     }
 
@@ -111,7 +144,7 @@ class Bootstrap extends Bootstrapper
 
         $config = new ConfigService($this->getDB());
         $apiKey = $config->getApiKey();
-        if ($apiKey !== '') {
+        if ($apiKey !== "") {
             // Best effort: stop FLIZpay from sending webhooks to a shop that no
             // longer has the plugin installed.
             $api = new FlizPayService($apiKey);
@@ -120,23 +153,30 @@ class Bootstrap extends Bootstrapper
         }
     }
 
-    public function renderAdminMenuTab(string $tabName, int $menuID, JTLSmarty $smarty): string
-    {
-        return (new lib\Admin\StatusTab($this->getDB(), $this->getPlugin()))->render($smarty);
+    public function renderAdminMenuTab(
+        string $tabName,
+        int $menuID,
+        JTLSmarty $smarty,
+    ): string {
+        return (new lib\Admin\StatusTab(
+            $this->getDB(),
+            $this->getPlugin(),
+        ))->render($smarty);
     }
 
     private function reportLifecycle(bool $isActive): void
     {
         $config = new ConfigService($this->getDB());
         $apiKey = $config->getApiKey();
-        if ($apiKey === '') {
+        if ($apiKey === "") {
             return;
         }
         try {
             (new FlizPayService($apiKey))->reportLifecycle($isActive);
         } catch (\Throwable $e) {
-            FlizPlugin::log('lifecycle report failed', \LOGLEVEL_ERROR, ['error' => $e->getMessage()]);
+            FlizPlugin::log("lifecycle report failed", \LOGLEVEL_ERROR, [
+                "error" => $e->getMessage(),
+            ]);
         }
     }
-
 }
