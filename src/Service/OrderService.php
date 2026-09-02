@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Service;
+namespace Plugin\flizpay\src\Service;
 
 use JTL\Checkout\Bestellung;
 use JTL\DB\DbInterface;
-use Plugin\flizpay\lib\FlizPlugin;
+use Plugin\flizpay\src\FlizPlugin;
 use Plugin\flizpay\paymentmethod\FlizPay;
 use stdClass;
 

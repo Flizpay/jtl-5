@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib;
+namespace Plugin\flizpay\src;
 
 use JTL\DB\DbInterface;
 use JTL\Plugin\Helper as PluginHelper;
 use JTL\Plugin\PluginInterface;
 use JTL\Shop;
-use Plugin\flizpay\lib\Service\Logger;
+use Plugin\flizpay\src\Service\Logger;
 
 /**
  * Static access to plugin identity, settings and logging.

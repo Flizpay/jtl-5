@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Util;
+namespace Plugin\flizpay\src\Util;
 
 /**
  * Verifies the X-Fliz-Signature webhook header (HMAC-SHA256, lowercase hex).

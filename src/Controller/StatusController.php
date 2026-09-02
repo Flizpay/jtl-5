@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Controller;
+namespace Plugin\flizpay\src\Controller;
 
 use JTL\Smarty\JTLSmarty;
 use Laminas\Diactoros\Response\JsonResponse;
-use Plugin\flizpay\lib\Service\OrderService;
-use Plugin\flizpay\lib\Service\TransactionRepository;
+use Plugin\flizpay\src\Service\OrderService;
+use Plugin\flizpay\src\Service\TransactionRepository;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 

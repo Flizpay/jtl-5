@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Plugin\flizpay\lib\Service\DiscountService;
-use Plugin\flizpay\lib\Service\OrderService;
-use Plugin\flizpay\lib\Service\TransactionRepository;
+use Plugin\flizpay\src\Service\DiscountService;
+use Plugin\flizpay\src\Service\OrderService;
+use Plugin\flizpay\src\Service\TransactionRepository;
 
 /**
  * In-memory stand-ins for the settlement collaborators. The mutex helpers

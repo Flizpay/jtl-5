@@ -49,5 +49,5 @@ require_once __DIR__ . '/TestCase.php';
 require_once __DIR__ . '/Doubles.php';
 
 // Tests never write real logs; LoggerTest swaps in a capturing sink.
-\Plugin\flizpay\lib\Service\Logger::setSink(static function (): void {});
-\Plugin\flizpay\lib\Service\Logger::setDebugEnabled(false);
+\Plugin\flizpay\src\Service\Logger::setSink(static function (): void {});
+\Plugin\flizpay\src\Service\Logger::setDebugEnabled(false);

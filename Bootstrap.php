@@ -9,14 +9,14 @@ use JTL\Plugin\Bootstrapper;
 use JTL\Plugin\BootstrapperInterface;
 use JTL\Router\Router;
 use JTL\Smarty\JTLSmarty;
-use Plugin\flizpay\lib\Api\FlizPayService;
-use Plugin\flizpay\lib\Controller\ReturnController;
-use Plugin\flizpay\lib\Controller\StatusController;
-use Plugin\flizpay\lib\Controller\WebhookController;
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\CashbackService;
-use Plugin\flizpay\lib\Service\ConfigService;
-use Plugin\flizpay\lib\Admin\SettingsTab;
+use Plugin\flizpay\src\Api\FlizPayService;
+use Plugin\flizpay\src\Controller\ReturnController;
+use Plugin\flizpay\src\Controller\StatusController;
+use Plugin\flizpay\src\Controller\WebhookController;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\CashbackService;
+use Plugin\flizpay\src\Service\ConfigService;
+use Plugin\flizpay\src\Admin\SettingsTab;
 
 class Bootstrap extends Bootstrapper implements BootstrapperInterface
 {
@@ -74,7 +74,7 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
             },
         );
 
-        // Settings are saved by the custom admin tab (lib/Admin/SettingsTab),
+        // Settings are saved by the custom admin tab (src/Admin/SettingsTab),
         // which also runs the onboarding handshake — no HOOK_PLUGIN_SAVE_OPTIONS.
     }
 

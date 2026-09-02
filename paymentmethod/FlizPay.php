@@ -9,12 +9,12 @@ use JTL\Checkout\Bestellung;
 use JTL\Plugin\Payment\Method;
 use JTL\Session\Frontend;
 use JTL\Shop;
-use Plugin\flizpay\lib\Api\FlizPayService;
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\ConfigService;
-use Plugin\flizpay\lib\Service\ConnectionService;
-use Plugin\flizpay\lib\Service\OrderService;
-use Plugin\flizpay\lib\Service\TransactionRepository;
+use Plugin\flizpay\src\Api\FlizPayService;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\ConfigService;
+use Plugin\flizpay\src\Service\ConnectionService;
+use Plugin\flizpay\src\Service\OrderService;
+use Plugin\flizpay\src\Service\TransactionRepository;
 
 /**
  * FLIZpay payment method (redirect PSP, order created before payment).

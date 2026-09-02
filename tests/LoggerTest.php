@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\Logger;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\Logger;
 
 /**
  * Covers the debug gate, the always-on notice/error path and the scalar-only

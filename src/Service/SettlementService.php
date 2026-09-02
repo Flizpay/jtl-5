@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Service;
+namespace Plugin\flizpay\src\Service;
 
-use Plugin\flizpay\lib\FlizPlugin;
+use Plugin\flizpay\src\FlizPlugin;
 
 /**
  * The FLIZpay settlement state machine — a faithful port of the WooCommerce

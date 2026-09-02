@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Service;
+namespace Plugin\flizpay\src\Service;
 
 use JTL\DB\DbInterface;
 use JTL\Shop;
-use Plugin\flizpay\lib\FlizPlugin;
+use Plugin\flizpay\src\FlizPlugin;
 
 /**
  * Merchant settings (tplugineinstellungen, declared in info.xml) and the

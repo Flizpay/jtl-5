@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Api;
+namespace Plugin\flizpay\src\Api;
 
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\Logger;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\Logger;
 
 /**
  * Minimal curl client for the FLIZpay API.

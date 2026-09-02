@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Admin;
+namespace Plugin\flizpay\src\Admin;
 
 use JTL\DB\DbInterface;
 use JTL\Helpers\Form;
 use JTL\Plugin\PluginInterface;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\CashbackService;
-use Plugin\flizpay\lib\Service\ConfigService;
-use Plugin\flizpay\lib\Service\ConnectionService;
-use Plugin\flizpay\lib\Service\Logger;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\CashbackService;
+use Plugin\flizpay\src\Service\ConfigService;
+use Plugin\flizpay\src\Service\ConnectionService;
+use Plugin\flizpay\src\Service\Logger;
 
 /**
  * The "Settings" tab owns the whole settings lifecycle: it saves the merchant

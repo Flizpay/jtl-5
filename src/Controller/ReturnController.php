@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Controller;
+namespace Plugin\flizpay\src\Controller;
 
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Laminas\Diactoros\Response\RedirectResponse;
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\OrderService;
-use Plugin\flizpay\lib\Service\TransactionRepository;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\OrderService;
+use Plugin\flizpay\src\Service\TransactionRepository;
 use Plugin\flizpay\paymentmethod\FlizPay;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

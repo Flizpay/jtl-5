@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Service;
+namespace Plugin\flizpay\src\Service;
 
 use JTL\DB\DbInterface;
-use Plugin\flizpay\lib\FlizPlugin;
+use Plugin\flizpay\src\FlizPlugin;
 
 /**
  * Keeps the checkout presentation of the payment method in sync with the

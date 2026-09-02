@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Plugin\flizpay\lib\Service\SettlementService;
+use Plugin\flizpay\src\Service\SettlementService;
 
 /**
  * Covers the settlement state machine: validation, idempotency, the attempt

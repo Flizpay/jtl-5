@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Api;
+namespace Plugin\flizpay\src\Api;
 
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\ConfigService;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\ConfigService;
 
 class FlizPayService
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Service;
+namespace Plugin\flizpay\src\Service;
 
 use JTL\Checkout\PaymentLog\PaymentLogService;
 use JTL\Checkout\PaymentLog\Repositories\PaymentLogDomainObject;
 use JTL\Checkout\ZahlungsLog;
-use Plugin\flizpay\lib\FlizPlugin;
+use Plugin\flizpay\src\FlizPlugin;
 
 /**
  * Plugin log with a merchant-controlled debug switch.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Plugin\flizpay\lib\Service\CashbackService;
+use Plugin\flizpay\src\Service\CashbackService;
 
 class CashbackServiceTest extends TestCase
 {

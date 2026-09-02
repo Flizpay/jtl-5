@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Controller;
+namespace Plugin\flizpay\src\Controller;
 
 use JTL\Smarty\JTLSmarty;
 use Laminas\Diactoros\Response\JsonResponse;
-use Plugin\flizpay\lib\FlizPlugin;
-use Plugin\flizpay\lib\Service\CashbackService;
-use Plugin\flizpay\lib\Service\ConfigService;
-use Plugin\flizpay\lib\Service\SettlementService;
-use Plugin\flizpay\lib\Util\SignatureVerifier;
+use Plugin\flizpay\src\FlizPlugin;
+use Plugin\flizpay\src\Service\CashbackService;
+use Plugin\flizpay\src\Service\ConfigService;
+use Plugin\flizpay\src\Service\SettlementService;
+use Plugin\flizpay\src\Util\SignatureVerifier;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 

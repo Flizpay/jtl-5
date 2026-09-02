@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Plugin\flizpay\lib\Service;
+namespace Plugin\flizpay\src\Service;
 
 use JTL\Shop;
-use Plugin\flizpay\lib\Api\FlizPayService;
-use Plugin\flizpay\lib\FlizPlugin;
+use Plugin\flizpay\src\Api\FlizPayService;
+use Plugin\flizpay\src\FlizPlugin;
 
 /**
  * The onboarding handshake:

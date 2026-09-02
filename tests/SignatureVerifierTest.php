@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Plugin\flizpay\lib\Util\SignatureVerifier;
+use Plugin\flizpay\src\Util\SignatureVerifier;
 
 /**
  * Covers webhook authentication, including the WooCommerce plugin's
