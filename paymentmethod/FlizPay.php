@@ -265,7 +265,7 @@ class FlizPay extends Method
         }
         if (empty($code) && !empty($order->kWaehrung)) {
             try {
-                $code = new Currency((int) $order->kWaehrung)->getCode();
+                $code = (new Currency((int) $order->kWaehrung))->getCode();
             } catch (\Throwable) {
                 $code = null;
             }

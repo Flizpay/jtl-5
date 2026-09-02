@@ -18,7 +18,8 @@ name matches the `<PluginID>` in `info.xml`, from which JTL derives the
 
 | Path | Purpose |
 |---|---|
-| `info.xml` | Manifest, payment method, settings, and admin menu |
+| `info.xml` | Manifest, payment method, and admin menu (settings live in `lib/Admin/SettingsTab.php`) |
+| `composer.json` | PHP target (8.1) for tooling/formatters; no runtime dependencies |
 | `Bootstrap.php` | Hooks, routes, and plugin lifecycle |
 | `paymentmethod/FlizPay.php` | Payment method and checkout flow |
 | `lib/Api/` | FLIZpay HTTP client and API operations |
