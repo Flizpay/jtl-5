@@ -13,6 +13,7 @@ use Plugin\flizpay\lib\FlizPlugin;
 use Plugin\flizpay\lib\Service\CashbackService;
 use Plugin\flizpay\lib\Service\ConfigService;
 use Plugin\flizpay\lib\Service\ConnectionService;
+use Plugin\flizpay\lib\Service\Logger;
 use Plugin\flizpay\lib\Service\TransactionRepository;
 
 /**
@@ -32,6 +33,7 @@ class SettingsTab
         "flizpay_apiKey" => "",
         "flizpay_displayLogo" => "Y",
         "flizpay_displayDescription" => "Y",
+        "flizpay_debugMode" => "N",
     ];
 
     private ConfigService $config;
@@ -75,6 +77,9 @@ class SettingsTab
                 "flizDisplayDescription",
                 $this->config->displayDescription(),
             )
+            ->assign("flizDebugMode", $this->config->debugMode())
+            ->assign("flizLogFile", Logger::getFilePath())
+            ->assign("flizPaymentLogUrl", $this->getPaymentLogUrl())
             ->assign("flizLogoUrl", $this->getLogoUrl())
             ->assign("flizAdminCssUrl", $this->getAdminCssUrl())
             ->assign(
@@ -184,6 +189,9 @@ class SettingsTab
             ),
         );
         $this->flushPluginCache();
+        // The debug flag is memoised per request; re-read it so the
+        // handshake below already logs at the freshly saved verbosity.
+        Logger::setDebugEnabled(null);
 
         $messages = [
             ["type" => "success", "text" => \d__("flizpay", "Settings saved.")],
@@ -277,6 +285,30 @@ class SettingsTab
         return $this->plugin->getPaths()->getBaseURL() .
             "adminmenu/css/flizpay-admin.css" .
             ($version !== "" ? "?v=" . \rawurlencode($version) : "");
+    }
+
+    /**
+     * Backend log view of the FLIZpay payment method (notice/error entries).
+     * The controller requires the CSRF token as a query parameter.
+     */
+    private function getPaymentLogUrl(): string
+    {
+        $methodId = FlizPlugin::getPaymentMethodId();
+        $token = (string) ($_SESSION["jtl_token"] ?? "");
+        if ($methodId <= 0 || $token === "") {
+            return "";
+        }
+        $route = \defined('JTL\Router\Route::PAYMENT_METHODS')
+            ? \JTL\Router\Route::PAYMENT_METHODS
+            : "paymentmethods";
+
+        return \rtrim(Shop::getAdminURL(), "/") .
+            "/" .
+            $route .
+            "?a=log&kZahlungsart=" .
+            $methodId .
+            "&token=" .
+            \rawurlencode($token);
     }
 
     private function getTemplatePath(): string

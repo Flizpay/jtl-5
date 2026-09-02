@@ -10,6 +10,10 @@ declare(strict_types=1);
 
 const LOGLEVEL_ERROR  = 1;
 const LOGLEVEL_NOTICE = 2;
+const LOGLEVEL_DEBUG  = 3;
+
+const PFAD_ROOT     = __DIR__ . '/../';
+\define('PFAD_LOGFILES', \sys_get_temp_dir() . '/flizpay-tests/');
 
 const BESTELLUNG_STATUS_STORNO         = -1;
 const BESTELLUNG_STATUS_OFFEN          = 1;
@@ -43,3 +47,7 @@ if (!\function_exists('d__')) {
 
 require_once __DIR__ . '/TestCase.php';
 require_once __DIR__ . '/Doubles.php';
+
+// Tests never write real logs; LoggerTest swaps in a capturing sink.
+\Plugin\flizpay\lib\Service\Logger::setSink(static function (): void {});
+\Plugin\flizpay\lib\Service\Logger::setDebugEnabled(false);

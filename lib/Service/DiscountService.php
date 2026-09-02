@@ -20,7 +20,7 @@ use Plugin\flizpay\lib\FlizPlugin;
  */
 class DiscountService
 {
-    private const POSITION_NAME = 'FLIZpay discount';
+    private const POSITION_NAME = "FLIZpay discount";
 
     private DbInterface $db;
 
@@ -31,91 +31,122 @@ class DiscountService
     public function __construct(
         ?DbInterface $db = null,
         ?TransactionRepository $repository = null,
-        ?OrderService $orderService = null
+        ?OrderService $orderService = null,
     ) {
-        $this->db           = $db ?? FlizPlugin::getDB();
-        $this->repository   = $repository ?? new TransactionRepository($this->db);
-        $this->orderService = $orderService ?? new OrderService($this->db, $this->repository);
+        $this->db = $db ?? FlizPlugin::getDB();
+        $this->repository = $repository ?? new TransactionRepository($this->db);
+        $this->orderService =
+            $orderService ?? new OrderService($this->db, $this->repository);
     }
 
     /**
      * @param float $discountOrderCurrency gross discount in the order's currency
      * @return bool true when the order was adjusted (or already carried the discount)
      */
-    public function apply(int $kBestellung, float $discountOrderCurrency, string $transactionId): bool
-    {
+    public function apply(
+        int $kBestellung,
+        float $discountOrderCurrency,
+        string $transactionId,
+    ): bool {
         if ($discountOrderCurrency < 0.005) {
             return true;
         }
         $orderData = $this->orderService->getOrderData($kBestellung);
-        $orderRow  = $this->repository->getOrderRow($kBestellung);
+        $orderRow = $this->repository->getOrderRow($kBestellung);
         if ($orderData === null || $orderRow === null) {
             return false;
         }
 
-        if ((int)$orderRow->nWawiHold !== 1 || $orderData->cAbgeholt !== 'Y') {
+        if ((int) $orderRow->nWawiHold !== 1 || $orderData->cAbgeholt !== "Y") {
             // Wawi may already own this order — never mutate it, tell the merchant instead.
             $note = \sprintf(
-                \d__('flizpay', 'FLIZpay: A discount of %s was granted during payment but could no longer be applied automatically. Please adjust the order discount manually in JTL-Wawi.'),
-                $this->formatAmount($discountOrderCurrency)
+                \d__(
+                    "flizpay",
+                    "FLIZpay: A discount of %s was granted during payment but could no longer be applied automatically. Please adjust the order discount manually in JTL-Wawi.",
+                ),
+                $this->formatAmount($discountOrderCurrency),
             );
             $this->orderService->appendOrderRemark($kBestellung, $note);
             FlizPlugin::log(
-                'discount NOT applied (order already released to Wawi) — merchant remark added',
+                "discount NOT applied (order already released to Wawi) — merchant remark added",
                 \LOGLEVEL_ERROR,
-                ['order' => $kBestellung, 'tx' => $transactionId, 'discount' => $discountOrderCurrency]
+                [
+                    "order" => $kBestellung,
+                    "tx" => $transactionId,
+                    "discount" => $discountOrderCurrency,
+                ],
             );
 
             return false;
         }
 
-        $kWarenkorb = (int)$orderData->kWarenkorb;
-        $existing   = $this->db->getSingleObject(
+        $kWarenkorb = (int) $orderData->kWarenkorb;
+        $existing = $this->db->getSingleObject(
             'SELECT kWarenkorbPos FROM twarenkorbpos
                 WHERE kWarenkorb = :cart AND nPosTyp = :type AND cName = :name',
-            ['cart' => $kWarenkorb, 'type' => \C_WARENKORBPOS_TYP_KUPON, 'name' => \d__('flizpay', self::POSITION_NAME)]
+            [
+                "cart" => $kWarenkorb,
+                "type" => \C_WARENKORBPOS_TYP_KUPON,
+                "name" => \d__("flizpay", self::POSITION_NAME),
+            ],
         );
         if ($existing !== null) {
             return true;
         }
 
-        $factor          = (float)$orderData->fWaehrungsFaktor > 0 ? (float)$orderData->fWaehrungsFaktor : 1.0;
+        $factor =
+            (float) $orderData->fWaehrungsFaktor > 0
+                ? (float) $orderData->fWaehrungsFaktor
+                : 1.0;
         $discountDefault = $discountOrderCurrency / $factor;
 
-        foreach ($this->splitByTaxRate($kWarenkorb, $discountDefault) as $share) {
-            $net = -1 * \round($share['gross'] / (1 + $share['rate'] / 100), 5);
-            $this->db->insert('twarenkorbpos', (object)[
-                'kWarenkorb'                => $kWarenkorb,
-                'kArtikel'                  => 0,
-                'kVersandklasse'            => 0,
-                'cName'                     => \d__('flizpay', self::POSITION_NAME),
-                'cLieferstatus'             => '',
-                'cArtNr'                    => '',
-                'cEinheit'                  => '',
-                'fPreisEinzelNetto'         => $net,
-                'fPreis'                    => $net,
-                'fMwSt'                     => $share['rate'],
-                'nAnzahl'                   => 1,
-                'nPosTyp'                   => \C_WARENKORBPOS_TYP_KUPON,
-                'cHinweis'                  => '',
-                'cUnique'                   => '',
-                'cResponsibility'           => 'core',
-                'kKonfigitem'               => 0,
-                'kBestellpos'               => 0,
-                'fLagerbestandVorAbschluss' => 0,
-            ]);
+        foreach (
+            $this->splitByTaxRate($kWarenkorb, $discountDefault)
+            as $share
+        ) {
+            $net = -1 * \round($share["gross"] / (1 + $share["rate"] / 100), 5);
+            $this->db->insert(
+                "twarenkorbpos",
+                (object) [
+                    "kWarenkorb" => $kWarenkorb,
+                    "kArtikel" => 0,
+                    "kVersandklasse" => 0,
+                    "cName" => \d__("flizpay", self::POSITION_NAME),
+                    "cLieferstatus" => "",
+                    "cArtNr" => "",
+                    "cEinheit" => "",
+                    "fPreisEinzelNetto" => $net,
+                    "fPreis" => $net,
+                    "fMwSt" => $share["rate"],
+                    "nAnzahl" => 1,
+                    "nPosTyp" => \C_WARENKORBPOS_TYP_KUPON,
+                    "cHinweis" => "",
+                    "cUnique" => "",
+                    "cResponsibility" => "core",
+                    "kKonfigitem" => 0,
+                    "kBestellpos" => 0,
+                    "fLagerbestandVorAbschluss" => 0,
+                ],
+            );
         }
 
         $this->db->queryPrepared(
-            'UPDATE tbestellung SET fGesamtsumme = fGesamtsumme - :discount WHERE kBestellung = :oid',
-            ['discount' => \round($discountDefault, 4), 'oid' => $kBestellung]
+            "UPDATE tbestellung SET fGesamtsumme = fGesamtsumme - :discount WHERE kBestellung = :oid",
+            ["discount" => \round($discountDefault, 4), "oid" => $kBestellung],
         );
-        $this->repository->setDiscount($kBestellung, \number_format($discountOrderCurrency, 2, '.', ''));
+        $this->repository->setDiscount(
+            $kBestellung,
+            \number_format($discountOrderCurrency, 2, ".", ""),
+        );
 
         FlizPlugin::log(
-            'cashback discount applied as coupon position',
+            "cashback discount applied as coupon position",
             \LOGLEVEL_NOTICE,
-            ['order' => $kBestellung, 'tx' => $transactionId, 'discount' => $discountOrderCurrency]
+            [
+                "order" => $kBestellung,
+                "tx" => $transactionId,
+                "discount" => $discountOrderCurrency,
+            ],
         );
 
         return true;
@@ -128,8 +159,10 @@ class DiscountService
      *
      * @return array<int, array{rate: float, gross: float}>
      */
-    private function splitByTaxRate(int $kWarenkorb, float $discountGross): array
-    {
+    private function splitByTaxRate(
+        int $kWarenkorb,
+        float $discountGross,
+    ): array {
         $rates = $this->db->getObjects(
             'SELECT fMwSt AS rate, SUM((fPreis * (1 + fMwSt / 100)) * nAnzahl) AS gross
                 FROM twarenkorbpos
@@ -137,30 +170,41 @@ class DiscountService
                 GROUP BY fMwSt
                 HAVING gross > 0
                 ORDER BY gross DESC',
-            ['cart' => $kWarenkorb, 'coupon' => \C_WARENKORBPOS_TYP_KUPON]
+            ["cart" => $kWarenkorb, "coupon" => \C_WARENKORBPOS_TYP_KUPON],
         );
         if (\count($rates) === 0) {
-            return [['rate' => 0.0, 'gross' => \round($discountGross, 2)]];
+            return [["rate" => 0.0, "gross" => \round($discountGross, 2)]];
         }
 
-        $total  = \array_sum(\array_map(static fn($r) => (float)$r->gross, $rates));
+        $total = \array_sum(
+            \array_map(static fn($r) => (float) $r->gross, $rates),
+        );
         $shares = [];
-        $used   = 0.0;
+        $used = 0.0;
         foreach ($rates as $i => $rate) {
-            $gross = ($i === \count($rates) - 1)
-                ? \round($discountGross - $used, 2)
-                : \round($discountGross * (float)$rate->gross / $total, 2);
+            $gross =
+                $i === \count($rates) - 1
+                    ? \round($discountGross - $used, 2)
+                    : \round(
+                        ($discountGross * (float) $rate->gross) / $total,
+                        2,
+                    );
             $used += $gross;
             if ($gross > 0) {
-                $shares[] = ['rate' => (float)$rate->rate, 'gross' => $gross];
+                $shares[] = ["rate" => (float) $rate->rate, "gross" => $gross];
             }
         }
 
-        return $shares !== [] ? $shares : [['rate' => 0.0, 'gross' => \round($discountGross, 2)]];
+        return $shares !== []
+            ? $shares
+            : [["rate" => 0.0, "gross" => \round($discountGross, 2)]];
     }
 
     private function formatAmount(float $amount): string
     {
-        return \sprintf(\d__('flizpay', '%s (order currency)'), \number_format($amount, 2, ',', '.'));
+        return \sprintf(
+            \d__("flizpay", "%s (order currency)"),
+            \number_format($amount, 2, ",", "."),
+        );
     }
 }

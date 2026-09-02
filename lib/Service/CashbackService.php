@@ -18,15 +18,17 @@ use Plugin\flizpay\lib\FlizPlugin;
  */
 class CashbackService
 {
-    private const TITLE_PLAIN = 'FLIZpay';
+    private const TITLE_PLAIN = "FLIZpay";
 
     private DbInterface $db;
 
     private ConfigService $config;
 
-    public function __construct(?DbInterface $db = null, ?ConfigService $config = null)
-    {
-        $this->db     = $db ?? FlizPlugin::getDB();
+    public function __construct(
+        ?DbInterface $db = null,
+        ?ConfigService $config = null,
+    ) {
+        $this->db = $db ?? FlizPlugin::getDB();
         $this->config = $config ?? new ConfigService($this->db);
     }
 
@@ -52,23 +54,24 @@ class CashbackService
         $this->syncLogo($kZahlungsart);
 
         $rows = $this->db->getObjects(
-            'SELECT cISOSprache FROM tzahlungsartsprache WHERE kZahlungsart = :pm',
-            ['pm' => $kZahlungsart]
+            "SELECT cISOSprache FROM tzahlungsartsprache WHERE kZahlungsart = :pm",
+            ["pm" => $kZahlungsart],
         );
         foreach ($rows as $row) {
-            $german = \strtolower((string)$row->cISOSprache) === 'ger';
+            $german = \strtolower((string) $row->cISOSprache) === "ger";
             $this->db->queryPrepared(
                 'UPDATE tzahlungsartsprache
                     SET cName = :name, cHinweisTextShop = :descr
                     WHERE kZahlungsart = :pm AND cISOSprache = :iso',
                 [
-                    'name'  => self::TITLE_PLAIN . $this->previewTitleSuffix($german),
-                    'descr' => $this->config->displayDescription()
+                    "name" =>
+                        self::TITLE_PLAIN . $this->previewTitleSuffix($german),
+                    "descr" => $this->config->displayDescription()
                         ? $this->previewDescription($german)
-                        : '',
-                    'pm'    => $kZahlungsart,
-                    'iso'   => $row->cISOSprache,
-                ]
+                        : "",
+                    "pm" => $kZahlungsart,
+                    "iso" => $row->cISOSprache,
+                ],
             );
         }
     }
@@ -80,18 +83,18 @@ class CashbackService
     public function previewTitleSuffix(bool $german): string
     {
         $cashback = $this->config->getCashback();
-        $maxPct   = \max(
-            (float)($cashback['first_purchase_amount'] ?? 0),
-            (float)($cashback['standard_amount'] ?? 0)
+        $maxPct = \max(
+            (float) ($cashback["first_purchase_amount"] ?? 0),
+            (float) ($cashback["standard_amount"] ?? 0),
         );
         if ($maxPct <= 0) {
-            return '';
+            return "";
         }
         $pct = $this->formatPercent($maxPct, $german);
 
         return $german
-            ? \sprintf(' - Bis zu %s%% Rabatt', $pct)
-            : \sprintf(' - Up to %s%% Discount', $pct);
+            ? \sprintf(" - Bis zu %s%% Rabatt", $pct)
+            : \sprintf(" - Up to %s%% Discount", $pct);
     }
 
     /**
@@ -103,41 +106,56 @@ class CashbackService
         $cashback = $this->config->getCashback();
 
         return $this->buildDescription(
-            (float)($cashback['first_purchase_amount'] ?? 0),
-            (float)($cashback['standard_amount'] ?? 0),
-            $german
+            (float) ($cashback["first_purchase_amount"] ?? 0),
+            (float) ($cashback["standard_amount"] ?? 0),
+            $german,
         );
     }
 
-    private function buildDescription(float $first, float $standard, bool $german): string
-    {
+    private function buildDescription(
+        float $first,
+        float $standard,
+        bool $german,
+    ): string {
         if ($first > 0 && $standard > 0) {
             return $german
                 ? \sprintf(
-                    'Sichere dir %s%% Rabatt auf deine erste und %s%% auf jede weitere Zahlung mit FLIZpay.',
+                    "Sichere dir %s%% Rabatt auf deine erste und %s%% auf jede weitere Zahlung mit FLIZpay.",
                     $this->formatPercent($first, true),
-                    $this->formatPercent($standard, true)
+                    $this->formatPercent($standard, true),
                 )
                 : \sprintf(
-                    'Get %s%% off your first payment and %s%% off every payment after that with FLIZpay.',
+                    "Get %s%% off your first payment and %s%% off every payment after that with FLIZpay.",
                     $this->formatPercent($first, false),
-                    $this->formatPercent($standard, false)
+                    $this->formatPercent($standard, false),
                 );
         }
         if ($first > 0) {
             return $german
-                ? \sprintf('Sichere dir %s%% Rabatt auf deine erste Zahlung mit FLIZpay.', $this->formatPercent($first, true))
-                : \sprintf('Get %s%% off your first payment with FLIZpay.', $this->formatPercent($first, false));
+                ? \sprintf(
+                    "Sichere dir %s%% Rabatt auf deine erste Zahlung mit FLIZpay.",
+                    $this->formatPercent($first, true),
+                )
+                : \sprintf(
+                    "Get %s%% off your first payment with FLIZpay.",
+                    $this->formatPercent($first, false),
+                );
         }
         if ($standard > 0) {
             return $german
-                ? \sprintf('Sichere dir %s%% Rabatt mit FLIZpay.', $this->formatPercent($standard, true))
-                : \sprintf('Get %s%% off with FLIZpay.', $this->formatPercent($standard, false));
+                ? \sprintf(
+                    "Sichere dir %s%% Rabatt mit FLIZpay.",
+                    $this->formatPercent($standard, true),
+                )
+                : \sprintf(
+                    "Get %s%% off with FLIZpay.",
+                    $this->formatPercent($standard, false),
+                );
         }
 
         return $german
-            ? 'Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank.'
-            : 'Secure payments in direct collaboration with your bank.';
+            ? "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank."
+            : "Secure payments in direct collaboration with your bank.";
     }
 
     /**
@@ -147,26 +165,41 @@ class CashbackService
      */
     private function syncLogo(int $kZahlungsart): void
     {
-        $row     = $this->db->getSingleObject(
-            'SELECT cBild FROM tzahlungsart WHERE kZahlungsart = :pm',
-            ['pm' => $kZahlungsart]
+        $row = $this->db->getSingleObject(
+            "SELECT cBild FROM tzahlungsart WHERE kZahlungsart = :pm",
+            ["pm" => $kZahlungsart],
         );
-        $current = (string)($row->cBild ?? '');
+        $current = (string) ($row->cBild ?? "");
         if ($this->config->displayLogo()) {
-            $parked = (string)($this->config->get(ConfigService::KEY_METHOD_IMAGE) ?? '');
-            if ($current === '' && $parked !== '') {
-                $this->db->update('tzahlungsart', 'kZahlungsart', $kZahlungsart, (object)['cBild' => $parked]);
+            $parked =
+                (string) ($this->config->get(ConfigService::KEY_METHOD_IMAGE) ??
+                    "");
+            if ($current === "" && $parked !== "") {
+                $this->db->update(
+                    "tzahlungsart",
+                    "kZahlungsart",
+                    $kZahlungsart,
+                    (object) ["cBild" => $parked],
+                );
             }
-        } elseif ($current !== '') {
+        } elseif ($current !== "") {
             $this->config->set(ConfigService::KEY_METHOD_IMAGE, $current);
-            $this->db->update('tzahlungsart', 'kZahlungsart', $kZahlungsart, (object)['cBild' => '']);
+            $this->db->update(
+                "tzahlungsart",
+                "kZahlungsart",
+                $kZahlungsart,
+                (object) ["cBild" => ""],
+            );
         }
     }
 
     private function formatPercent(float $value, bool $german): string
     {
-        $formatted = \rtrim(\rtrim(\number_format($value, 2, '.', ''), '0'), '.');
+        $formatted = \rtrim(
+            \rtrim(\number_format($value, 2, ".", ""), "0"),
+            ".",
+        );
 
-        return $german ? \str_replace('.', ',', $formatted) : $formatted;
+        return $german ? \str_replace(".", ",", $formatted) : $formatted;
     }
 }

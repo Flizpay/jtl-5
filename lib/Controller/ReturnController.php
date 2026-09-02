@@ -24,40 +24,51 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class ReturnController
 {
-    public static function handle(ServerRequestInterface $request, array $args, JTLSmarty $smarty): ResponseInterface
-    {
-        $ph          = \trim((string)($request->getQueryParams()['ph'] ?? ''));
+    public static function handle(
+        ServerRequestInterface $request,
+        array $args,
+        JTLSmarty $smarty,
+    ): ResponseInterface {
+        $ph = \trim((string) ($request->getQueryParams()["ph"] ?? ""));
         $kBestellung = self::resolveOrderId($ph);
         if ($kBestellung === 0) {
-            return new RedirectResponse(Shop::getURL() . '/');
+            return new RedirectResponse(Shop::getURL() . "/");
         }
 
-        $repository   = new TransactionRepository();
+        $repository = new TransactionRepository();
         $orderService = new OrderService(null, $repository);
-        $orderData    = $orderService->getOrderData($kBestellung);
+        $orderData = $orderService->getOrderData($kBestellung);
         if ($orderData === null || !$orderService->isFlizPayOrder($orderData)) {
-            return new RedirectResponse(Shop::getURL() . '/');
+            return new RedirectResponse(Shop::getURL() . "/");
         }
 
         $state = self::paymentState($kBestellung, $repository, $orderService);
-        if ($state === 'completed') {
-            return new RedirectResponse(self::successTarget($kBestellung, $orderService));
+        if ($state === "completed") {
+            return new RedirectResponse(
+                self::successTarget($kBestellung, $orderService),
+            );
         }
 
-        return self::renderInterstitial($smarty, $ph, $kBestellung, $state, $orderService);
+        return self::renderInterstitial(
+            $smarty,
+            $ph,
+            $kBestellung,
+            $state,
+            $orderService,
+        );
     }
 
     public static function resolveOrderId(string $ph): int
     {
-        if ($ph === '' || \strlen($ph) > 191) {
+        if ($ph === "" || \strlen($ph) > 191) {
             return 0;
         }
         $row = FlizPlugin::getDB()->getSingleObject(
-            'SELECT kBestellung FROM tbestellid WHERE cId = :ph',
-            ['ph' => $ph]
+            "SELECT kBestellung FROM tbestellid WHERE cId = :ph",
+            ["ph" => $ph],
         );
 
-        return (int)($row->kBestellung ?? 0);
+        return (int) ($row->kBestellung ?? 0);
     }
 
     /**
@@ -66,21 +77,24 @@ class ReturnController
     public static function paymentState(
         int $kBestellung,
         TransactionRepository $repository,
-        OrderService $orderService
+        OrderService $orderService,
     ): string {
         $orderData = $orderService->getOrderData($kBestellung);
         if ($orderData !== null && $orderData->dBezahltDatum !== null) {
-            return 'completed';
+            return "completed";
         }
         // the latest transaction, not the current-attempt one: settling a
         // failure advances the order's attempt counter, so the transaction that
         // just failed is no longer the current attempt
         $tx = $repository->getLatestTransaction($kBestellung);
-        if ($tx !== null && \in_array((string)$tx->cStatus, ['failed', 'canceled'], true)) {
-            return 'failed';
+        if (
+            $tx !== null &&
+            \in_array((string) $tx->cStatus, ["failed", "canceled"], true)
+        ) {
+            return "failed";
         }
 
-        return 'pending';
+        return "pending";
     }
 
     /**
@@ -88,43 +102,53 @@ class ReturnController
      * getReturnURL (Abschlussseite when configured, order-status page
      * otherwise; both work sessionless).
      */
-    public static function successTarget(int $kBestellung, ?OrderService $orderService = null): string
-    {
+    public static function successTarget(
+        int $kBestellung,
+        ?OrderService $orderService = null,
+    ): string {
         try {
             $orderService ??= new OrderService();
-            $order        = $orderService->loadOrder($kBestellung);
+            $order = $orderService->loadOrder($kBestellung);
             if ($order !== null) {
-                $url = (new FlizPay(FlizPlugin::getModuleId()))->getReturnURL($order);
-                if (\is_string($url) && $url !== '') {
+                $paymentMethod = new FlizPay(FlizPlugin::getModuleId());
+                $url = $paymentMethod->getReturnURL($order);
+                if (\is_string($url) && $url !== "") {
                     return $url;
                 }
             }
         } catch (\Throwable $e) {
-            FlizPlugin::log('successTarget failed', \LOGLEVEL_ERROR, ['order' => $kBestellung, 'error' => $e->getMessage()]);
+            FlizPlugin::log("successTarget failed", \LOGLEVEL_ERROR, [
+                "order" => $kBestellung,
+                "error" => $e->getMessage(),
+            ]);
         }
 
-        return Shop::getURL() . '/';
+        return Shop::getURL() . "/";
     }
 
     /**
      * Order-status page (carries the "pay again" button for retries).
      */
-    public static function orderStatusUrl(int $kBestellung, ?OrderService $orderService = null): string
-    {
+    public static function orderStatusUrl(
+        int $kBestellung,
+        ?OrderService $orderService = null,
+    ): string {
         try {
             $orderService ??= new OrderService();
-            $order        = $orderService->loadOrder($kBestellung);
-            $url          = $order->BestellstatusURL ?? '';
-            if (\is_string($url) && $url !== '') {
+            $order = $orderService->loadOrder($kBestellung);
+            $url = $order->BestellstatusURL ?? "";
+            if (\is_string($url) && $url !== "") {
                 return $url;
             }
         } catch (\Throwable) {
         }
 
         try {
-            return Shop::Container()->getLinkService()->getStaticRoute('jtl.php') . '?bestellungen=1';
+            return Shop::Container()
+                ->getLinkService()
+                ->getStaticRoute("jtl.php") . "?bestellungen=1";
         } catch (\Throwable) {
-            return Shop::getURL() . '/';
+            return Shop::getURL() . "/";
         }
     }
 
@@ -133,24 +157,51 @@ class ReturnController
         string $ph,
         int $kBestellung,
         string $state,
-        OrderService $orderService
+        OrderService $orderService,
     ): ResponseInterface {
-        $template = \dirname(__DIR__, 2) . '/frontend/template/return_polling.tpl';
-        $plugin   = FlizPlugin::getPlugin();
-        $baseUrl  = $plugin !== null ? \rtrim($plugin->getPaths()->getBaseURL(), '/') : '';
+        $template =
+            \dirname(__DIR__, 2) . "/frontend/template/return_polling.tpl";
+        $plugin = FlizPlugin::getPlugin();
+        $baseUrl =
+            $plugin !== null
+                ? \rtrim($plugin->getPaths()->getBaseURL(), "/")
+                : "";
 
         return $smarty
-            ->assign('flizState', $state)
-            ->assign('flizPollUrl', Shop::getURL() . '/flizpay/status?ph=' . \rawurlencode($ph))
-            ->assign('flizStatusUrl', self::orderStatusUrl($kBestellung, $orderService))
-            ->assign('flizSpinner', $baseUrl !== '' ? $baseUrl . '/frontend/fliz-loading-wheel.svg' : '')
-            ->assign('flizLang', [
-                'processingHeading' => \d__('flizpay', 'Confirming your payment ...'),
-                'processingText'    => \d__('flizpay', 'You will be redirected automatically once your payment is confirmed.'),
-                'processingSlow'    => \d__('flizpay', 'Confirmation is taking longer than usual. You can check the status in your order overview at any time.'),
-                'failedHeading'     => \d__('flizpay', 'Payment not completed'),
-                'failedText'        => \d__('flizpay', 'Your FLIZpay payment was not completed. Nothing was charged.'),
-                'toOrderStatus'     => \d__('flizpay', 'Go to order status'),
+            ->assign("flizState", $state)
+            ->assign(
+                "flizPollUrl",
+                Shop::getURL() . "/flizpay/status?ph=" . \rawurlencode($ph),
+            )
+            ->assign(
+                "flizStatusUrl",
+                self::orderStatusUrl($kBestellung, $orderService),
+            )
+            ->assign(
+                "flizSpinner",
+                $baseUrl !== ""
+                    ? $baseUrl . "/frontend/fliz-loading-wheel.svg"
+                    : "",
+            )
+            ->assign("flizLang", [
+                "processingHeading" => \d__(
+                    "flizpay",
+                    "Confirming your payment ...",
+                ),
+                "processingText" => \d__(
+                    "flizpay",
+                    "You will be redirected automatically once your payment is confirmed.",
+                ),
+                "processingSlow" => \d__(
+                    "flizpay",
+                    "Confirmation is taking longer than usual. You can check the status in your order overview at any time.",
+                ),
+                "failedHeading" => \d__("flizpay", "Payment not completed"),
+                "failedText" => \d__(
+                    "flizpay",
+                    "Your FLIZpay payment was not completed. Nothing was charged.",
+                ),
+                "toOrderStatus" => \d__("flizpay", "Go to order status"),
             ])
             ->getResponse($template);
     }

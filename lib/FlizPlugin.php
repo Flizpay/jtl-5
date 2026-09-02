@@ -8,6 +8,7 @@ use JTL\DB\DbInterface;
 use JTL\Plugin\Helper as PluginHelper;
 use JTL\Plugin\PluginInterface;
 use JTL\Shop;
+use Plugin\flizpay\lib\Service\Logger;
 
 /**
  * Static access to plugin identity, settings and logging.
@@ -89,40 +90,22 @@ final class FlizPlugin
     }
 
     /**
-     * Payment-method log (tzahlungslog, visible in the backend) plus shop log
-     * for warnings/errors.
+     * Plugin log file plus the payment-method log (tzahlungslog) for
+     * notice/error entries. Context must be scalar-only — see Logger.
      */
     public static function log(
         string $message,
         int $level = \LOGLEVEL_NOTICE,
         array $context = [],
     ): void {
-        if ($context !== []) {
-            $message .=
-                " | " .
-                \json_encode(
-                    $context,
-                    \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES,
-                );
-        }
-        try {
-            \JTL\Checkout\ZahlungsLog::add(
-                self::getModuleId(),
-                $message,
-                null,
-                $level,
-            );
-        } catch (\Throwable) {
-            // never let logging break payment processing
-        }
-        try {
-            $logger = Shop::Container()->getLogService();
-            if ($level === \LOGLEVEL_ERROR) {
-                $logger->error("FLIZpay: " . $message);
-            } elseif ($level === \LOGLEVEL_NOTICE) {
-                $logger->notice("FLIZpay: " . $message);
-            }
-        } catch (\Throwable) {
-        }
+        Logger::write($level, $message, $context);
+    }
+
+    /**
+     * Written only while the merchant enabled "Debug logging".
+     */
+    public static function debug(string $message, array $context = []): void
+    {
+        Logger::debug($message, $context);
     }
 }

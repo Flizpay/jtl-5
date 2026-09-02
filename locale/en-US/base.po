@@ -144,3 +144,21 @@ msgstr "FLIZpay: A discount of %s was granted during payment but could no longer
 
 msgid "%s (order currency)"
 msgstr "%s (order currency)"
+
+msgid "Payment Options"
+msgstr "Payment Options"
+
+msgid "Enable debug logging"
+msgstr "Enable debug logging"
+
+msgid "Warnings and errors are always written to the log file. Enable to also record debug entries (API calls, webhooks, payment steps). API keys, signatures and customer data are never logged. Disable when you are done."
+msgstr "Warnings and errors are always written to the log file. Enable to also record debug entries (API calls, webhooks, payment steps). API keys, signatures and customer data are never logged. Disable when you are done."
+
+msgid "Log file"
+msgstr "Log file"
+
+msgid "Open FLIZpay payment log"
+msgstr "Open FLIZpay payment log"
+
+msgid "Debug logging is active."
+msgstr "Debug logging is active."

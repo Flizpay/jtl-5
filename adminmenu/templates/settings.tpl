@@ -141,6 +141,38 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-header">{d__('flizpay', 'Payment Options')}</div>
+        <div class="card-body">
+            <input type="hidden" name="flizpay_debugMode" value="N">
+            <div class="custom-control custom-checkbox">
+                <input type="checkbox"
+                       class="custom-control-input"
+                       id="flizDebugModeInput"
+                       name="flizpay_debugMode"
+                       value="Y"
+                       {if $flizDebugMode}checked{/if}>
+                <label class="custom-control-label" for="flizDebugModeInput">
+                    {d__('flizpay', 'Enable debug logging')}
+                </label>
+            </div>
+            <small class="form-text text-muted">
+                {d__('flizpay', 'Warnings and errors are always written to the log file. Enable to also record debug entries (API calls, webhooks, payment steps). API keys, signatures and customer data are never logged. Disable when you are done.')}
+            </small>
+            <p class="mb-0 mt-2 small">
+                {d__('flizpay', 'Log file')}: <code>{$flizLogFile|escape:'html'}</code>
+                {if $flizPaymentLogUrl !== ''}
+                    &middot; <a href="{$flizPaymentLogUrl|escape:'html'}">{d__('flizpay', 'Open FLIZpay payment log')}</a>
+                {/if}
+            </p>
+            {if $flizDebugMode}
+                <div class="alert alert-warning mt-3 mb-0">
+                    {d__('flizpay', 'Debug logging is active.')}
+                </div>
+            {/if}
+        </div>
+    </div>
+
     <div class="mb-4 text-right">
         <button type="submit" name="flizAction" value="save" class="btn btn-primary">
             {d__('flizpay', 'Save')}

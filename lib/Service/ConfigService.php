@@ -18,15 +18,15 @@ use Plugin\flizpay\lib\FlizPlugin;
  */
 class ConfigService
 {
-    public const KEY_WEBHOOK_KEY      = 'webhook_key';
-    public const KEY_WEBHOOK_URL      = 'webhook_url';
-    public const KEY_WEBHOOK_ALIVE    = 'webhook_alive';
-    public const KEY_CASHBACK         = 'cashback';
-    public const KEY_REPORTED_VERSION = 'reported_plugin_version';
-    public const KEY_LAST_WEBHOOK_AT  = 'last_webhook_at';
-    public const KEY_API_KEY_HASH     = 'api_key_hash';
-    public const KEY_HANDSHAKE_AT     = 'handshake_at';
-    public const KEY_METHOD_IMAGE     = 'method_image';
+    public const KEY_WEBHOOK_KEY = "webhook_key";
+    public const KEY_WEBHOOK_URL = "webhook_url";
+    public const KEY_WEBHOOK_ALIVE = "webhook_alive";
+    public const KEY_CASHBACK = "cashback";
+    public const KEY_REPORTED_VERSION = "reported_plugin_version";
+    public const KEY_LAST_WEBHOOK_AT = "last_webhook_at";
+    public const KEY_API_KEY_HASH = "api_key_hash";
+    public const KEY_HANDSHAKE_AT = "handshake_at";
+    public const KEY_METHOD_IMAGE = "method_image";
 
     private DbInterface $db;
 
@@ -42,8 +42,8 @@ class ConfigService
     public function get(string $key): ?string
     {
         $row = $this->db->getSingleObject(
-            'SELECT cValue FROM xplugin_flizpay_config WHERE cKey = :k',
-            ['k' => $key]
+            "SELECT cValue FROM xplugin_flizpay_config WHERE cKey = :k",
+            ["k" => $key],
         );
 
         return $row->cValue ?? null;
@@ -55,28 +55,28 @@ class ConfigService
             'INSERT INTO xplugin_flizpay_config (cKey, cValue, dUpdated)
                 VALUES (:k, :v, NOW())
                 ON DUPLICATE KEY UPDATE cValue = :v, dUpdated = NOW()',
-            ['k' => $key, 'v' => $value]
+            ["k" => $key, "v" => $value],
         );
     }
 
     public function delete(string $key): void
     {
-        $this->db->delete('xplugin_flizpay_config', 'cKey', $key);
+        $this->db->delete("xplugin_flizpay_config", "cKey", $key);
     }
 
     public function isWebhookAlive(): bool
     {
-        return $this->get(self::KEY_WEBHOOK_ALIVE) === 'yes';
+        return $this->get(self::KEY_WEBHOOK_ALIVE) === "yes";
     }
 
     public function setWebhookAlive(bool $alive): void
     {
-        $this->set(self::KEY_WEBHOOK_ALIVE, $alive ? 'yes' : 'no');
+        $this->set(self::KEY_WEBHOOK_ALIVE, $alive ? "yes" : "no");
     }
 
     public function getWebhookKey(): string
     {
-        return (string)($this->get(self::KEY_WEBHOOK_KEY) ?? '');
+        return (string) ($this->get(self::KEY_WEBHOOK_KEY) ?? "");
     }
 
     /**
@@ -85,7 +85,7 @@ class ConfigService
     public function getCashback(): ?array
     {
         $raw = $this->get(self::KEY_CASHBACK);
-        if ($raw === null || $raw === '') {
+        if ($raw === null || $raw === "") {
             return null;
         }
         $data = \json_decode($raw, true);
@@ -94,8 +94,9 @@ class ConfigService
         }
 
         return [
-            'first_purchase_amount' => (float)($data['first_purchase_amount'] ?? 0),
-            'standard_amount'       => (float)($data['standard_amount'] ?? 0),
+            "first_purchase_amount" =>
+                (float) ($data["first_purchase_amount"] ?? 0),
+            "standard_amount" => (float) ($data["standard_amount"] ?? 0),
         ];
     }
 
@@ -104,11 +105,13 @@ class ConfigService
         $this->set(
             self::KEY_CASHBACK,
             $cashback === null
-                ? ''
-                : (string)\json_encode([
-                    'first_purchase_amount' => (float)($cashback['first_purchase_amount'] ?? 0),
-                    'standard_amount'       => (float)($cashback['standard_amount'] ?? 0),
-                ])
+                ? ""
+                : (string) \json_encode([
+                    "first_purchase_amount" =>
+                        (float) ($cashback["first_purchase_amount"] ?? 0),
+                    "standard_amount" =>
+                        (float) ($cashback["standard_amount"] ?? 0),
+                ]),
         );
     }
 
@@ -119,8 +122,8 @@ class ConfigService
     public function getMerchantSetting(string $valueName): ?string
     {
         $row = $this->db->getSingleObject(
-            'SELECT cWert FROM tplugineinstellungen WHERE kPlugin = :pid AND cName = :name',
-            ['pid' => FlizPlugin::getKPlugin(), 'name' => $valueName]
+            "SELECT cWert FROM tplugineinstellungen WHERE kPlugin = :pid AND cName = :name",
+            ["pid" => FlizPlugin::getKPlugin(), "name" => $valueName],
         );
 
         return $row->cWert ?? null;
@@ -128,17 +131,30 @@ class ConfigService
 
     public function getApiKey(): string
     {
-        return \trim((string)($this->getMerchantSetting('flizpay_apiKey') ?? ''));
+        return \trim(
+            (string) ($this->getMerchantSetting("flizpay_apiKey") ?? ""),
+        );
     }
 
     public function displayLogo(): bool
     {
-        return ($this->getMerchantSetting('flizpay_displayLogo') ?? 'Y') !== 'N';
+        return ($this->getMerchantSetting("flizpay_displayLogo") ?? "Y") !==
+            "N";
     }
 
     public function displayDescription(): bool
     {
-        return ($this->getMerchantSetting('flizpay_displayDescription') ?? 'Y') !== 'N';
+        return ($this->getMerchantSetting("flizpay_displayDescription") ??
+            "Y") !==
+            "N";
+    }
+
+    /**
+     * Debug entries in jtllogs/flizpay.log; off by default.
+     */
+    public function debugMode(): bool
+    {
+        return ($this->getMerchantSetting("flizpay_debugMode") ?? "N") === "Y";
     }
 
     /**
@@ -147,9 +163,9 @@ class ConfigService
      */
     public function isConnected(): bool
     {
-        return $this->getApiKey() !== ''
-            && \strlen($this->getWebhookKey()) >= 32
-            && $this->isWebhookAlive();
+        return $this->getApiKey() !== "" &&
+            \strlen($this->getWebhookKey()) >= 32 &&
+            $this->isWebhookAlive();
     }
 
     /**
@@ -161,14 +177,16 @@ class ConfigService
         $kPlugin = FlizPlugin::getKPlugin();
         $this->db->queryPrepared(
             "UPDATE tplugineinstellungen SET cWert = '' WHERE kPlugin = :pid AND cName = 'flizpay_apiKey'",
-            ['pid' => $kPlugin]
+            ["pid" => $kPlugin],
         );
-        $this->set(self::KEY_API_KEY_HASH, '');
+        $this->set(self::KEY_API_KEY_HASH, "");
         try {
-            Shop::Container()->getCache()->flushTags([
-                \CACHING_GROUP_PLUGIN,
-                \CACHING_GROUP_PLUGIN . '_' . $kPlugin,
-            ]);
+            Shop::Container()
+                ->getCache()
+                ->flushTags([
+                    \CACHING_GROUP_PLUGIN,
+                    \CACHING_GROUP_PLUGIN . "_" . $kPlugin,
+                ]);
         } catch (\Throwable) {
         }
     }

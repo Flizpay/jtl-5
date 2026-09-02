@@ -27,9 +27,9 @@ use Plugin\flizpay\lib\Service\TransactionRepository;
  */
 class FlizPay extends Method
 {
-    public const FAILURE_URL = 'https://checkout.flizpay.de/failed';
+    public const FAILURE_URL = "https://checkout.flizpay.de/failed";
 
-    public const SOURCE = 'plugin';
+    public const SOURCE = "plugin";
 
     private ConfigService $config;
 
@@ -43,8 +43,8 @@ class FlizPay extends Method
     public function init(int $nAgainCheckout = 0)
     {
         parent::init($nAgainCheckout);
-        $this->payAgain   = $nAgainCheckout === 1;
-        $this->config     = new ConfigService();
+        $this->payAgain = $nAgainCheckout === 1;
+        $this->config = new ConfigService();
         $this->repository = new TransactionRepository();
 
         return $this;
@@ -56,7 +56,17 @@ class FlizPay extends Method
      */
     public function isValidIntern(array $args_arr = []): bool
     {
-        return $this->config->isConnected();
+        $connected = $this->config->isConnected();
+        if (!$connected) {
+            FlizPlugin::debug("method hidden: not connected", [
+                "apiKeySet" => $this->config->getApiKey() !== "",
+                "webhookKeySet" =>
+                    \strlen($this->config->getWebhookKey()) >= 32,
+                "webhookAlive" => $this->config->isWebhookAlive(),
+            ]);
+        }
+
+        return $connected;
     }
 
     /**
@@ -73,8 +83,14 @@ class FlizPay extends Method
         } catch (\Throwable) {
             return true;
         }
+        $selectable = $currency === null || \strtoupper($currency) === "EUR";
+        if (!$selectable) {
+            FlizPlugin::debug("method hidden: unsupported currency", [
+                "currency" => $currency,
+            ]);
+        }
 
-        return $currency === null || \strtoupper($currency) === 'EUR';
+        return $selectable;
     }
 
     /**
@@ -93,88 +109,133 @@ class FlizPay extends Method
      */
     public function preparePaymentProcess(Bestellung $order): void
     {
-        $smarty      = Shop::Smarty();
-        $kBestellung = (int)$order->kBestellung;
+        $smarty = Shop::Smarty();
+        $kBestellung = (int) $order->kBestellung;
         if ($kBestellung <= 0) {
-            FlizPlugin::log('preparePaymentProcess without a saved order — aborting', \LOGLEVEL_ERROR);
-            $smarty->assign('flizError', \d__('flizpay', 'The FLIZpay payment could not be started. Please try again from your order overview or contact the shop.'));
+            FlizPlugin::log(
+                "preparePaymentProcess without a saved order — aborting",
+                \LOGLEVEL_ERROR,
+            );
+            $smarty->assign(
+                "flizError",
+                \d__(
+                    "flizpay",
+                    "The FLIZpay payment could not be started. Please try again from your order overview or contact the shop.",
+                ),
+            );
 
             return;
         }
 
         try {
             $hash = $this->getOrderHash($order);
-            if ($hash === null || $hash === '') {
-                throw new \RuntimeException('order hash (tbestellid) missing');
+            if ($hash === null || $hash === "") {
+                throw new \RuntimeException("order hash (tbestellid) missing");
             }
 
             $orderRow = $this->repository->ensureOrderRow($kBestellung);
-            $attempt  = (int)$orderRow->nAttempt;
-            $this->repository->setWawiHold($kBestellung, $this->isHeldFromWawi($kBestellung));
+            $attempt = (int) $orderRow->nAttempt;
+            $this->repository->setWawiHold(
+                $kBestellung,
+                $this->isHeldFromWawi($kBestellung),
+            );
 
             $currency = $this->resolveCurrency($order);
-            $amount   = $this->resolveAmount($order);
+            $amount = $this->resolveAmount($order);
             if ($amount <= 0) {
-                throw new \RuntimeException('order total is not payable: ' . $amount);
+                throw new \RuntimeException(
+                    "order total is not payable: " . $amount,
+                );
             }
+            FlizPlugin::debug("creating transaction", [
+                "order" => $kBestellung,
+                "attempt" => $attempt,
+                "amount" => $amount,
+                "currency" => $currency,
+                "wawiHold" => $this->isHeldFromWawi($kBestellung),
+                "payAgain" => $this->payAgain,
+            ]);
 
-            $transaction = (new FlizPayService($this->config->getApiKey()))->createTransaction(
+            $apiService = new FlizPayService($this->config->getApiKey());
+            $transaction = $apiService->createTransaction(
                 [
-                    'amount'     => (float)$amount,
-                    'currency'   => $currency,
-                    'externalId' => (string)$kBestellung,
-                    'successUrl' => Shop::getURL() . '/flizpay/return?ph=' . \rawurlencode($hash),
-                    'failureUrl' => self::FAILURE_URL,
-                    'customer'   => [
-                        'email'     => (string)($order->oRechnungsadresse->cMail ?? ''),
-                        'firstName' => (string)($order->oRechnungsadresse->cVorname ?? ''),
-                        'lastName'  => (string)($order->oRechnungsadresse->cNachname ?? ''),
+                    "amount" => (float) $amount,
+                    "currency" => $currency,
+                    "externalId" => (string) $kBestellung,
+                    "successUrl" =>
+                        Shop::getURL() .
+                        "/flizpay/return?ph=" .
+                        \rawurlencode($hash),
+                    "failureUrl" => self::FAILURE_URL,
+                    "customer" => [
+                        "email" =>
+                            (string) ($order->oRechnungsadresse->cMail ?? ""),
+                        "firstName" =>
+                            (string) ($order->oRechnungsadresse->cVorname ??
+                                ""),
+                        "lastName" =>
+                            (string) ($order->oRechnungsadresse->cNachname ??
+                                ""),
                     ],
-                    'source'     => self::SOURCE,
+                    "source" => self::SOURCE,
                 ],
-                'jtl-' . \hash('sha256', $kBestellung . ':' . $attempt)
+                "jtl-" . \hash("sha256", $kBestellung . ":" . $attempt),
             );
             if ($transaction === null) {
-                throw new \RuntimeException('FLIZpay did not return a usable transaction');
+                throw new \RuntimeException(
+                    "FLIZpay did not return a usable transaction",
+                );
             }
 
             $this->repository->saveTransaction(
                 $kBestellung,
-                $transaction['transactionId'],
-                $transaction['reference'],
+                $transaction["transactionId"],
+                $transaction["reference"],
                 $attempt,
-                \number_format($amount, 2, '.', ''),
-                $currency
+                \number_format($amount, 2, ".", ""),
+                $currency,
             );
-            FlizPlugin::log(
-                'transaction created',
-                \LOGLEVEL_NOTICE,
-                [
-                    'order'   => $kBestellung,
-                    'tx'      => $transaction['transactionId'],
-                    'attempt' => $attempt,
-                    'amount'  => $amount,
-                    'payAgain' => $this->payAgain,
-                ]
-            );
+            FlizPlugin::log("transaction created", \LOGLEVEL_NOTICE, [
+                "order" => $kBestellung,
+                "tx" => $transaction["transactionId"],
+                "attempt" => $attempt,
+                "amount" => $amount,
+                "payAgain" => $this->payAgain,
+            ]);
 
-            $smarty->assign('flizRedirectUrl', $transaction['redirectUrl'])
-                ->assign('flizRedirectNotice', \d__('flizpay', 'You are being redirected to FLIZpay to complete your payment.'))
-                ->assign('flizPayNow', \d__('flizpay', 'Pay now with FLIZpay'));
+            $smarty
+                ->assign("flizRedirectUrl", $transaction["redirectUrl"])
+                ->assign(
+                    "flizRedirectNotice",
+                    \d__(
+                        "flizpay",
+                        "You are being redirected to FLIZpay to complete your payment.",
+                    ),
+                )
+                ->assign("flizPayNow", \d__("flizpay", "Pay now with FLIZpay"));
 
             if (!\headers_sent()) {
-                \header('Location: ' . $transaction['redirectUrl']);
-                exit;
+                \header("Location: " . $transaction["redirectUrl"]);
+                exit();
             }
         } catch (\Throwable $e) {
-            FlizPlugin::log(
-                'preparePaymentProcess failed',
-                \LOGLEVEL_ERROR,
-                ['order' => $kBestellung, 'error' => $e->getMessage()]
-            );
-            $smarty->assign('flizError', \d__('flizpay', 'The FLIZpay payment could not be started. Please try again from your order overview or contact the shop.'))
-                ->assign('flizToOrderStatus', \d__('flizpay', 'Go to order status'))
-                ->assign('flizStatusUrl', $order->BestellstatusURL ?? '');
+            FlizPlugin::log("preparePaymentProcess failed", \LOGLEVEL_ERROR, [
+                "order" => $kBestellung,
+                "error" => $e->getMessage(),
+            ]);
+            $smarty
+                ->assign(
+                    "flizError",
+                    \d__(
+                        "flizpay",
+                        "The FLIZpay payment could not be started. Please try again from your order overview or contact the shop.",
+                    ),
+                )
+                ->assign(
+                    "flizToOrderStatus",
+                    \d__("flizpay", "Go to order status"),
+                )
+                ->assign("flizStatusUrl", $order->BestellstatusURL ?? "");
         }
     }
 
@@ -184,31 +245,33 @@ class FlizPay extends Method
      */
     public function resolveAmount(Bestellung $order): float
     {
-        $factor = (float)($order->fWaehrungsFaktor ?? 1.0);
+        $factor = (float) ($order->fWaehrungsFaktor ?? 1.0);
         if ($factor <= 0) {
             $factor = 1.0;
         }
 
-        return \round((float)$order->fGesamtsumme * $factor, 2);
+        return \round((float) $order->fGesamtsumme * $factor, 2);
     }
 
     public function resolveCurrency(Bestellung $order): string
     {
         $code = null;
         if (isset($order->Waehrung)) {
-            $code = \is_object($order->Waehrung) && \method_exists($order->Waehrung, 'getCode')
-                ? $order->Waehrung->getCode()
-                : ($order->Waehrung->cISO ?? null);
+            $code =
+                \is_object($order->Waehrung) &&
+                \method_exists($order->Waehrung, "getCode")
+                    ? $order->Waehrung->getCode()
+                    : $order->Waehrung->cISO ?? null;
         }
         if (empty($code) && !empty($order->kWaehrung)) {
             try {
-                $code = (new Currency((int)$order->kWaehrung))->getCode();
+                $code = new Currency((int) $order->kWaehrung)->getCode();
             } catch (\Throwable) {
                 $code = null;
             }
         }
 
-        return \strtoupper((string)($code ?: 'EUR'));
+        return \strtoupper((string) ($code ?: "EUR"));
     }
 
     /**
@@ -219,11 +282,11 @@ class FlizPay extends Method
     private function isHeldFromWawi(int $kBestellung): bool
     {
         $row = $this->getDB()->getSingleObject(
-            'SELECT cAbgeholt FROM tbestellung WHERE kBestellung = :oid',
-            ['oid' => $kBestellung]
+            "SELECT cAbgeholt FROM tbestellung WHERE kBestellung = :oid",
+            ["oid" => $kBestellung],
         );
 
-        return ($row->cAbgeholt ?? 'N') === 'Y';
+        return ($row->cAbgeholt ?? "N") === "Y";
     }
 
     /**

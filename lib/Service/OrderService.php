@@ -20,9 +20,11 @@ class OrderService
 
     private TransactionRepository $repository;
 
-    public function __construct(?DbInterface $db = null, ?TransactionRepository $repository = null)
-    {
-        $this->db         = $db ?? FlizPlugin::getDB();
+    public function __construct(
+        ?DbInterface $db = null,
+        ?TransactionRepository $repository = null,
+    ) {
+        $this->db = $db ?? FlizPlugin::getDB();
         $this->repository = $repository ?? new TransactionRepository($this->db);
     }
 
@@ -34,7 +36,7 @@ class OrderService
             return null;
         }
         $order = new Bestellung($kBestellung, false, $this->db);
-        if ((int)$order->kBestellung !== $kBestellung) {
+        if ((int) $order->kBestellung !== $kBestellung) {
             return null;
         }
         // signature: fuelleBestellung(bool $htmlCurrency, $external, $initProduct, $disableFactor)
@@ -53,11 +55,17 @@ class OrderService
      * and (once) the paid-confirmation mail. Mirrors the Mollie booking
      * sequence for JTL-Wawi compatibility.
      */
-    public function bookPayment(int $kBestellung, string $amount, string $currency, string $transactionId): void
-    {
+    public function bookPayment(
+        int $kBestellung,
+        string $amount,
+        string $currency,
+        string $transactionId,
+    ): void {
         $order = $this->loadOrder($kBestellung);
         if ($order === null) {
-            FlizPlugin::log('bookPayment: order not found', \LOGLEVEL_ERROR, ['order' => $kBestellung]);
+            FlizPlugin::log("bookPayment: order not found", \LOGLEVEL_ERROR, [
+                "order" => $kBestellung,
+            ]);
 
             return;
         }
@@ -66,30 +74,52 @@ class OrderService
         // guard against a repair-run double booking: only insert the incoming
         // payment when the order is unpaid AND no payment row exists yet
         $existingPayment = $this->db->getSingleObject(
-            'SELECT kZahlungseingang FROM tzahlungseingang WHERE kBestellung = :oid',
-            ['oid' => $kBestellung]
+            "SELECT kZahlungseingang FROM tzahlungseingang WHERE kBestellung = :oid",
+            ["oid" => $kBestellung],
         );
-        if ($order->dBezahltDatum === null && $existingPayment === null) {
-            $method->addIncomingPayment($order, (object)[
-                'fBetrag'           => (float)$amount,
-                'cISO'              => $currency,
-                'cZahlungsanbieter' => 'FLIZpay',
-                'cHinweis'          => $transactionId,
-            ]);
+        $addPayment =
+            $order->dBezahltDatum === null && $existingPayment === null;
+        FlizPlugin::debug("bookPayment: incoming payment", [
+            "order" => $kBestellung,
+            "tx" => $transactionId,
+            "added" => $addPayment,
+            "skipped" => $addPayment
+                ? null
+                : ($existingPayment !== null
+                    ? "payment_row_exists"
+                    : "already_paid"),
+        ]);
+        if ($addPayment) {
+            $method->addIncomingPayment(
+                $order,
+                (object) [
+                    "fBetrag" => (float) $amount,
+                    "cISO" => $currency,
+                    "cZahlungsanbieter" => "FLIZpay",
+                    "cHinweis" => $transactionId,
+                ],
+            );
         }
         $method->setOrderStatusToPaid($order);
         $this->releaseWawiHold($kBestellung);
 
-        if ($this->repository->markMailSentOnce($kBestellung)) {
+        $sendMail = $this->repository->markMailSentOnce($kBestellung);
+        FlizPlugin::debug("bookPayment: status paid, wawi released", [
+            "order" => $kBestellung,
+            "tx" => $transactionId,
+            "sendMail" => $sendMail,
+        ]);
+        if ($sendMail) {
             // sendMail() itself honours the method's nMailSenden mail flags
             $method->sendConfirmationMail($order);
         }
 
-        FlizPlugin::log(
-            'payment booked',
-            \LOGLEVEL_NOTICE,
-            ['order' => $kBestellung, 'tx' => $transactionId, 'amount' => $amount, 'currency' => $currency]
-        );
+        FlizPlugin::log("payment booked", \LOGLEVEL_NOTICE, [
+            "order" => $kBestellung,
+            "tx" => $transactionId,
+            "amount" => $amount,
+            "currency" => $currency,
+        ]);
     }
 
     /**
@@ -99,12 +129,12 @@ class OrderService
     public function releaseWawiHold(int $kBestellung): void
     {
         $row = $this->repository->getOrderRow($kBestellung);
-        if ($row === null || (int)$row->nWawiHold !== 1) {
+        if ($row === null || (int) $row->nWawiHold !== 1) {
             return;
         }
         $this->db->queryPrepared(
             "UPDATE tbestellung SET cAbgeholt = 'N' WHERE kBestellung = :oid AND cAbgeholt = 'Y'",
-            ['oid' => $kBestellung]
+            ["oid" => $kBestellung],
         );
     }
 
@@ -118,7 +148,7 @@ class OrderService
             "UPDATE tbestellung
                 SET cKommentar = TRIM(BOTH '\n' FROM CONCAT(COALESCE(cKommentar, ''), '\n', :note))
                 WHERE kBestellung = :oid",
-            ['note' => $note, 'oid' => $kBestellung]
+            ["note" => $note, "oid" => $kBestellung],
         );
     }
 
@@ -132,7 +162,7 @@ class OrderService
                     dBezahltDatum, fGesamtsumme, fWaehrungsFaktor
                 FROM tbestellung
                 WHERE kBestellung = :oid',
-            ['oid' => $kBestellung]
+            ["oid" => $kBestellung],
         );
     }
 
@@ -140,6 +170,6 @@ class OrderService
     {
         $methodId = FlizPlugin::getPaymentMethodId();
 
-        return $methodId > 0 && (int)$orderData->kZahlungsart === $methodId;
+        return $methodId > 0 && (int) $orderData->kZahlungsart === $methodId;
     }
 }

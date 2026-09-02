@@ -123,4 +123,14 @@ class SignatureVerifierTest extends TestCase
             'implausibly short key means rejected'
         );
     }
+
+    public function testFailureReasonNeverDependsOnSecretValues(): void
+    {
+        $this->assertSame('no_key', SignatureVerifier::failureReason('abc', null));
+        $this->assertSame('no_key', SignatureVerifier::failureReason('abc', ''));
+        $this->assertSame('short_key', SignatureVerifier::failureReason('abc', 'short'));
+        $this->assertSame('no_header', SignatureVerifier::failureReason(null, self::KEY));
+        $this->assertSame('no_header', SignatureVerifier::failureReason('', self::KEY));
+        $this->assertSame('mismatch', SignatureVerifier::failureReason('deadbeef', self::KEY));
+    }
 }

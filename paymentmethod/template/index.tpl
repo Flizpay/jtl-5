@@ -1,8 +1,3 @@
-{**
- * Rendered on the order completion page. preparePaymentProcess() normally
- * redirects before this is reached; this fragment covers the case where the
- * headers were already sent, and shows a recoverable error otherwise.
- *}
 {if isset($flizError) && $flizError}
     {row}
         {col}

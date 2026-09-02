@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Plugin\flizpay\lib\Api;
 
 use Plugin\flizpay\lib\FlizPlugin;
+use Plugin\flizpay\lib\Service\Logger;
 
 /**
  * Minimal curl client for the FLIZpay API.
@@ -33,6 +34,7 @@ class FlizPayClient
         ?array $body = null,
         array $extraHeaders = [],
     ): array {
+        $method = \strtoupper($method);
         $headers = [
             "Content-type: application/json",
             "x-api-key: " . $this->apiKey,
@@ -45,7 +47,7 @@ class FlizPayClient
         $ch = \curl_init(self::BASE_URL . $path);
         \curl_setopt_array($ch, [
             \CURLOPT_RETURNTRANSFER => true,
-            \CURLOPT_CUSTOMREQUEST => \strtoupper($method),
+            \CURLOPT_CUSTOMREQUEST => $method,
             \CURLOPT_HTTPHEADER => $headers,
             \CURLOPT_CONNECTTIMEOUT => self::CONNECT_TIMEOUT,
             \CURLOPT_TIMEOUT => self::TIMEOUT,
@@ -64,41 +66,59 @@ class FlizPayClient
             );
         }
 
+        $started = \hrtime(true);
         $raw = \curl_exec($ch);
+        $elapsedMs = (int) \round((\hrtime(true) - $started) / 1e6);
         $status = (int) \curl_getinfo($ch, \CURLINFO_RESPONSE_CODE);
         $curlError = \curl_error($ch);
         \curl_close($ch);
 
         if ($raw === false) {
-            return [
+            $result = [
                 "status" => 0,
                 "data" => null,
                 "error" => $curlError ?: "connection failed",
                 "jsonError" => false,
             ];
+            // Always recorded: an unreachable API is silent for most callers.
+            Logger::error("http transport failure", [
+                "method" => $method,
+                "path" => $path,
+                "error" => $result["error"],
+                "ms" => $elapsedMs,
+            ]);
+        } else {
+            $decoded = \json_decode((string) $raw, true);
+            if (!\is_array($decoded)) {
+                $result = [
+                    "status" => $status,
+                    "data" => null,
+                    "error" => null,
+                    "jsonError" => true,
+                ];
+            } else {
+                // unwrap the optional {"data": {...}} envelope
+                $data =
+                    isset($decoded["data"]) && \is_array($decoded["data"])
+                        ? $decoded["data"]
+                        : $decoded;
+                $result = [
+                    "status" => $status,
+                    "data" => $data,
+                    "error" => null,
+                    "jsonError" => false,
+                ];
+            }
         }
 
-        $decoded = \json_decode((string) $raw, true);
-        if (!\is_array($decoded)) {
-            return [
-                "status" => $status,
-                "data" => null,
-                "error" => null,
-                "jsonError" => true,
-            ];
-        }
+        Logger::debug("http " . $method . " " . $path, [
+            "http" => $result["status"],
+            "ms" => $elapsedMs,
+            "bytes" => $raw === false ? 0 : \strlen((string) $raw),
+            "jsonError" => $result["jsonError"],
+            "error" => $result["error"],
+        ]);
 
-        // unwrap the optional {"data": {...}} envelope
-        $data =
-            isset($decoded["data"]) && \is_array($decoded["data"])
-                ? $decoded["data"]
-                : $decoded;
-
-        return [
-            "status" => $status,
-            "data" => $data,
-            "error" => null,
-            "jsonError" => false,
-        ];
+        return $result;
     }
 }

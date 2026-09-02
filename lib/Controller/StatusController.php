@@ -22,27 +22,40 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class StatusController
 {
-    public static function handle(ServerRequestInterface $request, array $args, JTLSmarty $smarty): ResponseInterface
-    {
-        $ph          = \trim((string)($request->getQueryParams()['ph'] ?? ''));
+    public static function handle(
+        ServerRequestInterface $request,
+        array $args,
+        JTLSmarty $smarty,
+    ): ResponseInterface {
+        $ph = \trim((string) ($request->getQueryParams()["ph"] ?? ""));
         $kBestellung = ReturnController::resolveOrderId($ph);
-        $headers     = ['Cache-Control' => 'no-store'];
+        $headers = ["Cache-Control" => "no-store"];
         if ($kBestellung === 0) {
-            return new JsonResponse(['state' => 'unknown'], 404, $headers);
+            return new JsonResponse(["state" => "unknown"], 404, $headers);
         }
 
-        $repository   = new TransactionRepository();
+        $repository = new TransactionRepository();
         $orderService = new OrderService(null, $repository);
-        $orderData    = $orderService->getOrderData($kBestellung);
+        $orderData = $orderService->getOrderData($kBestellung);
         if ($orderData === null || !$orderService->isFlizPayOrder($orderData)) {
-            return new JsonResponse(['state' => 'unknown'], 404, $headers);
+            return new JsonResponse(["state" => "unknown"], 404, $headers);
         }
-        $state = ReturnController::paymentState($kBestellung, $repository, $orderService);
-        $payload      = ['state' => $state];
-        if ($state === 'completed') {
-            $payload['redirectUrl'] = ReturnController::successTarget($kBestellung, $orderService);
-        } elseif ($state === 'failed') {
-            $payload['statusUrl'] = ReturnController::orderStatusUrl($kBestellung, $orderService);
+        $state = ReturnController::paymentState(
+            $kBestellung,
+            $repository,
+            $orderService,
+        );
+        $payload = ["state" => $state];
+        if ($state === "completed") {
+            $payload["redirectUrl"] = ReturnController::successTarget(
+                $kBestellung,
+                $orderService,
+            );
+        } elseif ($state === "failed") {
+            $payload["statusUrl"] = ReturnController::orderStatusUrl(
+                $kBestellung,
+                $orderService,
+            );
         }
 
         return new JsonResponse($payload, 200, $headers);

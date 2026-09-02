@@ -94,7 +94,14 @@ FLIZpay.
 - The **Settings** tab shows the connection state (below the API key field) and all
   open payments. The payment list is read-only; payment states are changed only by
   webhooks.
-- **Payment log:** Open **System > Log** in the backend or inspect the payment-method
-  log. FLIZpay events are recorded with the corresponding order and transaction IDs.
+- **Log file:** The plugin writes warnings and errors to `jtllogs/flizpay.log` in the
+  shop root (JTL's log directory; blocked from the web by JTL's `.htaccess` — nginx
+  setups must deny `jtllogs/` themselves, as JTL's own `phperror.log` lives there too).
+  Notice/error entries also appear in the payment-method log (**Payment methods >
+  FLIZpay > Log**, linked from the Settings tab) with order and transaction IDs.
+- **Debug logging:** Enable it under **Settings > Payment Options** to additionally record
+  every API call, webhook and payment step in `flizpay.log`. The log never contains API
+  keys, signatures, request/response bodies or customer data. The file is not rotated —
+  disable debug logging when you are done and delete the file if it grows large.
 - **After changing the domain or shop URL:** Save the plugin settings once — the
   plugin detects the changed webhook URL and re-registers it at FLIZpay.

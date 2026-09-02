@@ -55,6 +55,7 @@ class ConnectionService
     {
         $apiKey = \trim($apiKey);
         if ($apiKey === "") {
+            FlizPlugin::debug("settings saved: no API key, handshake skipped");
             $this->config->setWebhookAlive(false);
             $this->config->set(ConfigService::KEY_API_KEY_HASH, "");
 
@@ -77,6 +78,10 @@ class ConnectionService
             $this->config->get(ConfigService::KEY_API_KEY_HASH) === $keyHash
         ) {
             if ($this->config->isConnected()) {
+                FlizPlugin::debug(
+                    "settings saved: unchanged and connected, handshake skipped",
+                );
+
                 return ["success" => true, "ran" => false, "message" => ""];
             }
             // Saving other settings while the test webhook is still on its way
@@ -88,6 +93,13 @@ class ConnectionService
                 \time() - (int) \strtotime($handshakeAt) <
                     self::HANDSHAKE_GRACE_SECONDS
             ) {
+                FlizPlugin::debug(
+                    "settings saved: test webhook pending, handshake skipped",
+                    [
+                        "handshakeAt" => $handshakeAt,
+                    ],
+                );
+
                 return [
                     "success" => true,
                     "ran" => false,
@@ -110,6 +122,7 @@ class ConnectionService
         $this->config->setWebhookAlive(false);
         $api = new FlizPayService($apiKey);
         $webhookUrl = self::getWebhookUrl();
+        FlizPlugin::debug("handshake started", ["url" => $webhookUrl]);
 
         $registration = $api->registerWebhookUrl($webhookUrl);
         if (!$registration["ok"]) {

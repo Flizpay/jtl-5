@@ -7,47 +7,55 @@ namespace Plugin\flizpay\lib\Api;
 use Plugin\flizpay\lib\FlizPlugin;
 use Plugin\flizpay\lib\Service\ConfigService;
 
-/**
- * Typed operations on the FLIZpay API. Response validation mirrors the
- * WooCommerce plugin so both plugins accept exactly the same backend behavior.
- */
 class FlizPayService
 {
     private FlizPayClient $client;
+    private ConfigService $config;
 
     public function __construct(?string $apiKey = null)
     {
-        $this->client = new FlizPayClient($apiKey ?? (new ConfigService())->getApiKey());
+        $this->config = new ConfigService();
+        $this->client = new FlizPayClient(
+            $apiKey ?? $this->config->getApiKey(),
+        );
     }
 
     /**
      * @return array{transactionId:string, reference:string, redirectUrl:string}|null
      */
-    public function createTransaction(array $payload, string $idempotencyKey): ?array
-    {
-        $res = $this->client->request('POST', '/transactions', $payload, ['Idempotency-Key' => $idempotencyKey]);
-        $tx  = $res['data'];
-        if ($res['status'] < 200 || $res['status'] >= 300 || !\is_array($tx)) {
-            FlizPlugin::log(
-                'createTransaction failed',
-                \LOGLEVEL_ERROR,
-                ['http' => $res['status'], 'error' => $res['error'], 'jsonError' => $res['jsonError']]
-            );
+    public function createTransaction(
+        array $payload,
+        string $idempotencyKey,
+    ): ?array {
+        $res = $this->client->request("POST", "/transactions", $payload, [
+            "Idempotency-Key" => $idempotencyKey,
+        ]);
+        $tx = $res["data"];
+        if ($res["status"] < 200 || $res["status"] >= 300 || !\is_array($tx)) {
+            FlizPlugin::log("createTransaction failed", \LOGLEVEL_ERROR, [
+                "http" => $res["status"],
+                "error" => $res["error"],
+                "jsonError" => $res["jsonError"],
+            ]);
 
             return null;
         }
-        foreach (['transactionId', 'reference', 'redirectUrl'] as $field) {
+        foreach (["transactionId", "reference", "redirectUrl"] as $field) {
             if (empty($tx[$field]) || !\is_string($tx[$field])) {
-                FlizPlugin::log('createTransaction: incomplete response', \LOGLEVEL_ERROR, ['missing' => $field]);
+                FlizPlugin::log(
+                    "createTransaction: incomplete response",
+                    \LOGLEVEL_ERROR,
+                    ["missing" => $field],
+                );
 
                 return null;
             }
         }
 
         return [
-            'transactionId' => $tx['transactionId'],
-            'reference'     => $tx['reference'],
-            'redirectUrl'   => $tx['redirectUrl'],
+            "transactionId" => $tx["transactionId"],
+            "reference" => $tx["reference"],
+            "redirectUrl" => $tx["redirectUrl"],
         ];
     }
 
@@ -60,14 +68,24 @@ class FlizPayService
      */
     public function generateWebhookKey(): array
     {
-        $res = $this->client->request('GET', '/business/generate-webhook-key');
-        if ($res['status'] === 0) {
-            return ['ok' => false, 'transport' => true, 'key' => null];
+        $res = $this->client->request("GET", "/business/generate-webhook-key");
+        if ($res["status"] === 0) {
+            return ["ok" => false, "transport" => true, "key" => null];
         }
-        $key = $res['data']['webhookKey'] ?? null;
-        $ok  = \is_string($key) && \strlen($key) >= 32 && $res['status'] >= 200 && $res['status'] < 300;
+        $key = $res["data"]["webhookKey"] ?? null;
+        $ok =
+            \is_string($key) &&
+            \strlen($key) >= 32 &&
+            $res["status"] >= 200 &&
+            $res["status"] < 300;
+        if (!$ok) {
+            FlizPlugin::debug("generateWebhookKey rejected", [
+                "http" => $res["status"],
+                "keyLen" => \is_string($key) ? \strlen($key) : null,
+            ]);
+        }
 
-        return ['ok' => $ok, 'transport' => false, 'key' => $ok ? $key : null];
+        return ["ok" => $ok, "transport" => false, "key" => $ok ? $key : null];
     }
 
     /**
@@ -78,18 +96,28 @@ class FlizPayService
      */
     public function registerWebhookUrl(string $webhookUrl): array
     {
-        $res = $this->client->request('POST', '/business/edit', ['webhookUrl' => $webhookUrl]);
-        if ($res['status'] === 0) {
-            return ['ok' => false, 'transport' => true];
+        $res = $this->client->request("POST", "/business/edit", [
+            "webhookUrl" => $webhookUrl,
+        ]);
+        if ($res["status"] === 0) {
+            return ["ok" => false, "transport" => true];
         }
-        $echo = $res['data']['webhookUrl'] ?? null;
+        $echo = $res["data"]["webhookUrl"] ?? null;
+        $ok =
+            $res["status"] >= 200 &&
+            $res["status"] < 300 &&
+            \is_string($echo) &&
+            \strcmp($echo, $webhookUrl) === 0;
+        if (!$ok) {
+            FlizPlugin::debug("registerWebhookUrl rejected", [
+                "http" => $res["status"],
+                "echoMatch" =>
+                    \is_string($echo) && \strcmp($echo, $webhookUrl) === 0,
+                "url" => $webhookUrl,
+            ]);
+        }
 
-        return [
-            'ok'        => $res['status'] >= 200 && $res['status'] < 300
-                && \is_string($echo)
-                && \strcmp($echo, $webhookUrl) === 0,
-            'transport' => false,
-        ];
+        return ["ok" => $ok, "transport" => false];
     }
 
     /**
@@ -98,19 +126,31 @@ class FlizPayService
      */
     public function fetchCashback(): ?array
     {
-        $res       = $this->client->request('GET', '/business/cashback');
-        $cashbacks = $res['data']['cashbacks'] ?? null;
-        if ($res['status'] < 200 || $res['status'] >= 300 || !\is_array($cashbacks)) {
+        $res = $this->client->request("GET", "/business/cashback");
+        $cashbacks = $res["data"]["cashbacks"] ?? null;
+        if (
+            $res["status"] < 200 ||
+            $res["status"] >= 300 ||
+            !\is_array($cashbacks)
+        ) {
+            FlizPlugin::debug("fetchCashback: unreadable response", [
+                "http" => $res["status"],
+            ]);
+
             return null;
         }
+        FlizPlugin::debug("fetchCashback", ["count" => \count($cashbacks)]);
         foreach ($cashbacks as $cashback) {
-            if (!\is_array($cashback) || empty($cashback['active'])) {
+            if (!\is_array($cashback) || empty($cashback["active"])) {
                 continue;
             }
-            $first    = (float)($cashback['firstPurchaseAmount'] ?? 0);
-            $standard = (float)($cashback['amount'] ?? 0);
+            $first = (float) ($cashback["firstPurchaseAmount"] ?? 0);
+            $standard = (float) ($cashback["amount"] ?? 0);
             if ($first > 0 || $standard > 0) {
-                return ['first_purchase_amount' => $first, 'standard_amount' => $standard];
+                return [
+                    "first_purchase_amount" => $first,
+                    "standard_amount" => $standard,
+                ];
             }
         }
 
@@ -122,16 +162,23 @@ class FlizPayService
      */
     public function editBusiness(array $fields): bool
     {
-        $res = $this->client->request('POST', '/business/edit', $fields);
+        $res = $this->client->request("POST", "/business/edit", $fields);
+        $ok = $res["status"] >= 200 && $res["status"] < 300;
+        if (!$ok) {
+            FlizPlugin::debug("editBusiness rejected", [
+                "http" => $res["status"],
+                "fields" => \implode(",", \array_keys($fields)),
+            ]);
+        }
 
-        return $res['status'] >= 200 && $res['status'] < 300;
+        return $ok;
     }
 
     public function reportLifecycle(bool $isActive): bool
     {
-        $fields = ['isActive' => $isActive];
+        $fields = ["isActive" => $isActive];
         if ($isActive) {
-            $fields['pluginVersion'] = FlizPlugin::getVersion();
+            $fields["pluginVersion"] = FlizPlugin::getVersion();
         }
 
         return $this->editBusiness($fields);
@@ -139,11 +186,13 @@ class FlizPayService
 
     public function reportVersion(): bool
     {
-        return $this->editBusiness(['pluginVersion' => FlizPlugin::getVersion()]);
+        return $this->editBusiness([
+            "pluginVersion" => FlizPlugin::getVersion(),
+        ]);
     }
 
     public function deregisterWebhook(): bool
     {
-        return $this->editBusiness(['webhookUrl' => '']);
+        return $this->editBusiness(["webhookUrl" => ""]);
     }
 }

@@ -16,6 +16,7 @@ use Plugin\flizpay\lib\Controller\WebhookController;
 use Plugin\flizpay\lib\FlizPlugin;
 use Plugin\flizpay\lib\Service\CashbackService;
 use Plugin\flizpay\lib\Service\ConfigService;
+use Plugin\flizpay\lib\Admin\SettingsTab;
 
 class Bootstrap extends Bootstrapper implements BootstrapperInterface
 {
@@ -80,7 +81,8 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
     public function installed()
     {
         parent::installed();
-        (new CashbackService($this->getDB()))->syncPresentation();
+        $cashbackService = new CashbackService($this->getDB());
+        $cashbackService->syncPresentation();
     }
 
     public function enabled()
@@ -102,8 +104,10 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
         if ($config->getApiKey() === "") {
             return;
         }
+
+        $apiService = new FlizPayService($config->getApiKey());
         // Report the running plugin version on update.
-        if ((new FlizPayService($config->getApiKey()))->reportVersion()) {
+        if ($apiService->reportVersion()) {
             $config->set(
                 ConfigService::KEY_REPORTED_VERSION,
                 FlizPlugin::getVersion(),
@@ -131,21 +135,22 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
         int $menuID,
         JTLSmarty $smarty,
     ): string {
-        return (new lib\Admin\SettingsTab(
-            $this->getDB(),
-            $this->getPlugin(),
-        ))->render($smarty);
+        $settingsTab = new SettingsTab($this->getDB(), $this->getPlugin());
+        return $settingsTab->render($smarty);
     }
 
     private function reportLifecycle(bool $isActive): void
     {
         $config = new ConfigService($this->getDB());
         $apiKey = $config->getApiKey();
+
         if ($apiKey === "") {
             return;
         }
+
         try {
-            (new FlizPayService($apiKey))->reportLifecycle($isActive);
+            $apiService = new FlizPayService($apiKey);
+            $apiService->reportLifecycle($isActive);
         } catch (\Throwable $e) {
             FlizPlugin::log("lifecycle report failed", \LOGLEVEL_ERROR, [
                 "error" => $e->getMessage(),
