@@ -1,35 +1,104 @@
-{**
- * Interstitial shown when the customer returns from FLIZpay before the
- * webhook has settled the order. Polls /flizpay/status until the payment is
- * booked, then forwards to the confirmation page.
- *}
-<div class="flizpay-return container py-5 text-center"
+<style>
+{literal}
+    html,
+    body {
+        min-height: 100%;
+        margin: 0;
+    }
+
+    .flizpay-return {
+        box-sizing: border-box;
+        display: flex;
+        min-height: 100vh;
+        min-height: 100dvh;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.25rem;
+        color: #001f3f;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-align: center;
+    }
+
+    .flizpay-return__content {
+        width: 100%;
+        max-width: 38rem;
+    }
+
+    .flizpay-return__spinner {
+        display: block;
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 1.5rem;
+        color: #80ed99;
+        animation: flizpay-spin 2s linear infinite;
+    }
+
+    .flizpay-return h1 {
+        margin: 0 0 0.75rem;
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        line-height: 1.2;
+    }
+
+    .flizpay-return p {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .flizpay-return__slow {
+        margin-top: 0.75rem !important;
+    }
+
+    .flizpay-return__action {
+        display: inline-block;
+        margin-top: 2rem;
+        padding: 0.75rem 1.25rem;
+        border: 1px solid #22577a;
+        border-radius: 0.5rem;
+        color: #22577a;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .flizpay-return__action:hover,
+    .flizpay-return__action:focus-visible {
+        background: #22577a;
+        color: #fff;
+    }
+
+    @keyframes flizpay-spin {
+        to { transform: rotate(360deg); }
+    }
+{/literal}
+</style>
+
+<div class="flizpay-return"
      id="flizpay-return"
      data-fliz-poll-url="{$flizPollUrl|escape:'html'}"
      data-fliz-status-url="{$flizStatusUrl|escape:'html'}"
      data-fliz-state="{$flizState|escape:'html'}">
+    <div class="flizpay-return__content">
+        <div class="flizpay-return__pending" role="status"{if $flizState !== 'pending'} style="display:none"{/if}>
+            <svg class="flizpay-return__spinner" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                <path opacity="0.2" fill-rule="evenodd" clip-rule="evenodd" d="M12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19ZM12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor" />
+                <path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="currentColor" />
+            </svg>
+            <h1>{$flizLang.processingHeading|escape:'html'}</h1>
+            <p>{$flizLang.processingText|escape:'html'}</p>
+            <p class="flizpay-return__slow" style="display:none">
+                {$flizLang.processingSlow|escape:'html'}
+            </p>
+        </div>
 
-    <div class="flizpay-return__pending"{if $flizState !== 'pending'} style="display:none"{/if}>
-        {if $flizSpinner}
-            <img src="{$flizSpinner|escape:'html'}" alt="" width="64" height="64" class="mb-3">
-        {/if}
-        <h1 class="h4">{$flizLang.processingHeading|escape:'html'}</h1>
-        <p class="text-muted">{$flizLang.processingText|escape:'html'}</p>
-        <p class="text-muted flizpay-return__slow" style="display:none">
-            {$flizLang.processingSlow|escape:'html'}
-        </p>
-    </div>
+        <div class="flizpay-return__failed" role="status"{if $flizState !== 'failed'} style="display:none"{/if}>
+            <h1>{$flizLang.failedHeading|escape:'html'}</h1>
+            <p>{$flizLang.failedText|escape:'html'}</p>
+        </div>
 
-    <div class="flizpay-return__failed"{if $flizState !== 'failed'} style="display:none"{/if}>
-        <h1 class="h4">{$flizLang.failedHeading|escape:'html'}</h1>
-        <p class="text-muted">{$flizLang.failedText|escape:'html'}</p>
-    </div>
-
-    <p class="mt-4">
-        <a href="{$flizStatusUrl|escape:'html'}" class="btn btn-outline-secondary">
+        <a href="{$flizStatusUrl|escape:'html'}" class="flizpay-return__action">
             {$flizLang.toOrderStatus|escape:'html'}
         </a>
-    </p>
+    </div>
 </div>
 
 <script>

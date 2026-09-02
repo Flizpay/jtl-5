@@ -161,12 +161,6 @@ class ReturnController
     ): ResponseInterface {
         $template =
             \dirname(__DIR__, 2) . "/frontend/template/return_polling.tpl";
-        $plugin = FlizPlugin::getPlugin();
-        $baseUrl =
-            $plugin !== null
-                ? \rtrim($plugin->getPaths()->getBaseURL(), "/")
-                : "";
-
         return $smarty
             ->assign("flizState", $state)
             ->assign(
@@ -176,12 +170,6 @@ class ReturnController
             ->assign(
                 "flizStatusUrl",
                 self::orderStatusUrl($kBestellung, $orderService),
-            )
-            ->assign(
-                "flizSpinner",
-                $baseUrl !== ""
-                    ? $baseUrl . "/frontend/fliz-loading-wheel.svg"
-                    : "",
             )
             ->assign("flizLang", [
                 "processingHeading" => \d__(
