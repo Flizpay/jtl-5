@@ -40,29 +40,29 @@ msgstr "Go to order status"
 msgid "Settings"
 msgstr "Settings"
 
+msgid "API Configuration"
+msgstr "API Configuration"
+
 msgid "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection below."
 msgstr "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection below."
 
-msgid "No"
-msgstr "No"
+msgid "Checkout Settings"
+msgstr "Checkout Settings"
 
-msgid "Checkout display"
-msgstr "Checkout display"
+msgid "Logo"
+msgstr "Logo"
 
-msgid "Show FLIZpay logo"
-msgstr "Show FLIZpay logo"
+msgid "Subtitle"
+msgstr "Subtitle"
 
-msgid "Yes"
-msgstr "Yes"
+msgid "Show FLIZpay logo in checkout"
+msgstr "Show FLIZpay logo in checkout"
 
-msgid "Show discount in the title (\"FLIZpay - Up to X% discount\")"
-msgstr "Show discount in the title (\"FLIZpay - Up to X% discount\")"
+msgid "Show description in subtitle when FLIZpay is selected"
+msgstr "Show description in subtitle when FLIZpay is selected"
 
 msgid "The discount value is retrieved from your FLIZ company account and kept up to date automatically."
 msgstr "The discount value is retrieved from your FLIZ company account and kept up to date automatically."
-
-msgid "Show description"
-msgstr "Show description"
 
 msgid "FLIZpay is not offered at checkout until the connection is complete."
 msgstr "FLIZpay is not offered at checkout until the connection is complete."

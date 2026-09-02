@@ -49,11 +49,6 @@ class CashbackService
         if ($kZahlungsart <= 0) {
             return;
         }
-        $cashback = $this->config->getCashback();
-        $first    = (float)($cashback['first_purchase_amount'] ?? 0);
-        $standard = (float)($cashback['standard_amount'] ?? 0);
-        $maxPct   = \max($first, $standard);
-
         $this->syncLogo($kZahlungsart);
 
         $rows = $this->db->getObjects(
@@ -67,8 +62,10 @@ class CashbackService
                     SET cName = :name, cHinweisTextShop = :descr
                     WHERE kZahlungsart = :pm AND cISOSprache = :iso',
                 [
-                    'name'  => $this->buildTitle($maxPct, $german),
-                    'descr' => $this->buildDescription($first, $standard, $german),
+                    'name'  => self::TITLE_PLAIN . $this->previewTitleSuffix($german),
+                    'descr' => $this->config->displayDescription()
+                        ? $this->previewDescription($german)
+                        : '',
                     'pm'    => $kZahlungsart,
                     'iso'   => $row->cISOSprache,
                 ]
@@ -76,23 +73,44 @@ class CashbackService
         }
     }
 
-    private function buildTitle(float $maxPct, bool $german): string
+    /**
+     * Cashback suffix appended to the method title, e.g. " - Bis zu 5% Rabatt".
+     * Empty when no cashback is configured. Also used by the admin preview.
+     */
+    public function previewTitleSuffix(bool $german): string
     {
-        if (!$this->config->displayHeadline() || $maxPct <= 0) {
-            return self::TITLE_PLAIN;
+        $cashback = $this->config->getCashback();
+        $maxPct   = \max(
+            (float)($cashback['first_purchase_amount'] ?? 0),
+            (float)($cashback['standard_amount'] ?? 0)
+        );
+        if ($maxPct <= 0) {
+            return '';
         }
         $pct = $this->formatPercent($maxPct, $german);
 
         return $german
-            ? \sprintf('FLIZpay - Bis zu %s%% Rabatt', $pct)
-            : \sprintf('FLIZpay - Up to %s%% Discount', $pct);
+            ? \sprintf(' - Bis zu %s%% Rabatt', $pct)
+            : \sprintf(' - Up to %s%% Discount', $pct);
+    }
+
+    /**
+     * Description text for the current cashback data, regardless of the
+     * display settings. Also used by the admin preview.
+     */
+    public function previewDescription(bool $german): string
+    {
+        $cashback = $this->config->getCashback();
+
+        return $this->buildDescription(
+            (float)($cashback['first_purchase_amount'] ?? 0),
+            (float)($cashback['standard_amount'] ?? 0),
+            $german
+        );
     }
 
     private function buildDescription(float $first, float $standard, bool $german): string
     {
-        if (!$this->config->displayDescription()) {
-            return '';
-        }
         if ($first > 0 && $standard > 0) {
             return $german
                 ? \sprintf(

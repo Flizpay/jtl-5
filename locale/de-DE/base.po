@@ -40,29 +40,29 @@ msgstr "Zur Bestellübersicht"
 msgid "Settings"
 msgstr "Einstellungen"
 
+msgid "API Configuration"
+msgstr "API-Konfiguration"
+
 msgid "You can find your API key in the FLIZ company account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\". After saving, the plugin automatically registers the webhook URL and verifies the connection below."
 msgstr "Deinen API-Key findest du im FLIZ-Firmenkonto unter „FLIZ einrichten“ -> „Plugins“ -> „JTL“. Nach dem Speichern registriert das Plugin automatisch die Webhook-URL und prüft die Verbindung direkt darunter."
 
-msgid "No"
-msgstr "Nein"
-
-msgid "Checkout display"
+msgid "Checkout Settings"
 msgstr "Darstellung im Checkout"
 
-msgid "Show FLIZpay logo"
-msgstr "FLIZpay-Logo anzeigen"
+msgid "Logo"
+msgstr "Logo"
 
-msgid "Yes"
-msgstr "Ja"
+msgid "Subtitle"
+msgstr "Untertitel"
 
-msgid "Show discount in the title (\"FLIZpay - Up to X% discount\")"
-msgstr "Rabatt im Titel anzeigen („FLIZpay – Bis zu X% Rabatt“)"
+msgid "Show FLIZpay logo in checkout"
+msgstr "FLIZpay-Logo im Checkout anzeigen"
+
+msgid "Show description in subtitle when FLIZpay is selected"
+msgstr "Beschreibung im Untertitel anzeigen, wenn FLIZpay ausgewählt ist"
 
 msgid "The discount value is retrieved from your FLIZ company account and kept up to date automatically."
 msgstr "Der Rabattwert wird automatisch aus deinem FLIZ-Firmenkonto übernommen und aktuell gehalten."
-
-msgid "Show description"
-msgstr "Beschreibung anzeigen"
 
 msgid "FLIZpay is not offered at checkout until the connection is complete."
 msgstr "Solange die Verbindung nicht vollständig ist, wird FLIZpay im Checkout nicht angeboten."

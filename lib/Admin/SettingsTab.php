@@ -31,7 +31,6 @@ class SettingsTab
     private const SETTINGS = [
         "flizpay_apiKey" => "",
         "flizpay_displayLogo" => "Y",
-        "flizpay_displayHeadline" => "Y",
         "flizpay_displayDescription" => "Y",
     ];
 
@@ -50,6 +49,7 @@ class SettingsTab
     public function render(JTLSmarty $smarty): string
     {
         $messages = $this->handleAction();
+        $cashbackService = new CashbackService($this->db, $this->config);
 
         $apiKey = $this->config->getApiKey();
         $handshakeAt = $this->config->get(ConfigService::KEY_HANDSHAKE_AT);
@@ -71,10 +71,19 @@ class SettingsTab
             )
             ->assign("flizWebhookAlive", $this->config->isWebhookAlive())
             ->assign("flizDisplayLogo", $this->config->displayLogo())
-            ->assign("flizDisplayHeadline", $this->config->displayHeadline())
             ->assign(
                 "flizDisplayDescription",
                 $this->config->displayDescription(),
+            )
+            ->assign("flizLogoUrl", $this->getLogoUrl())
+            ->assign("flizAdminCssUrl", $this->getAdminCssUrl())
+            ->assign(
+                "flizPreviewTitleSuffix",
+                $cashbackService->previewTitleSuffix($this->isGermanAdmin()),
+            )
+            ->assign(
+                "flizPreviewSubtitle",
+                $cashbackService->previewDescription($this->isGermanAdmin()),
             )
             ->assign("flizAwaitingTest", $awaitingTest)
             ->assign("flizOpenPayments", $this->repository->listOpenForAdmin())
@@ -140,10 +149,15 @@ class SettingsTab
                 // The remaining settings are Y/N selects.
                 $value = (string) $value === "N" ? "N" : "Y";
             }
+            // tplugineinstellungen has no unique key on (kPlugin, cName),
+            // so an upsert would silently pile up duplicate rows.
+            $this->db->queryPrepared(
+                'DELETE FROM tplugineinstellungen WHERE kPlugin = :pid AND cName = :name',
+                ["pid" => FlizPlugin::getKPlugin(), "name" => $name],
+            );
             $this->db->queryPrepared(
                 'INSERT INTO tplugineinstellungen (kPlugin, cName, cWert)
-                    VALUES (:pid, :name, :val)
-                    ON DUPLICATE KEY UPDATE cWert = :val',
+                    VALUES (:pid, :name, :val)',
                 [
                     "pid" => FlizPlugin::getKPlugin(),
                     "name" => $name,
@@ -151,6 +165,24 @@ class SettingsTab
                 ],
             );
         }
+        // Drop settings owned by older plugin versions (e.g. the removed
+        // headline toggle) so no stale rows linger.
+        $names = \array_keys(self::SETTINGS);
+        $this->db->queryPrepared(
+            "DELETE FROM tplugineinstellungen
+                WHERE kPlugin = :pid
+                  AND cName LIKE 'flizpay\\_%'
+                  AND cName NOT IN (" .
+                \implode(",", \array_map(static fn($i) => ":n$i", \array_keys($names))) .
+            ")",
+            \array_merge(
+                ["pid" => FlizPlugin::getKPlugin()],
+                \array_combine(
+                    \array_map(static fn($i) => "n$i", \array_keys($names)),
+                    $names,
+                ),
+            ),
+        );
         $this->flushPluginCache();
 
         $messages = [
@@ -201,6 +233,50 @@ class SettingsTab
                 ]);
         } catch (\Throwable) {
         }
+    }
+
+    /**
+     * The preview mirrors what CashbackService writes for the shop languages;
+     * the variant shown in the admin follows the backend user's language.
+     */
+    private function isGermanAdmin(): bool
+    {
+        $language = (string) ($_SESSION["AdminAccount"]->language ?? "de-DE");
+
+        return \str_starts_with(\strtolower($language), "de");
+    }
+
+    /**
+     * URL of the checkout logo badge for the admin preview.
+     */
+    private function getLogoUrl(): string
+    {
+        if ($this->plugin !== null) {
+            return $this->plugin->getPaths()->getBaseURL() .
+                "paymentmethod/flizpay-logo.svg";
+        }
+
+        return "";
+    }
+
+    /**
+     * URL of the admin stylesheet, versioned so browsers pick up changes
+     * after a plugin update.
+     */
+    private function getAdminCssUrl(): string
+    {
+        if ($this->plugin === null) {
+            return "";
+        }
+        try {
+            $version = (string) $this->plugin->getMeta()->getVersion();
+        } catch (\Throwable) {
+            $version = "";
+        }
+
+        return $this->plugin->getPaths()->getBaseURL() .
+            "adminmenu/css/flizpay-admin.css" .
+            ($version !== "" ? "?v=" . \rawurlencode($version) : "");
     }
 
     private function getTemplatePath(): string

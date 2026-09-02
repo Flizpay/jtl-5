@@ -1,3 +1,7 @@
+{if $flizAdminCssUrl !== ''}
+    <link rel="stylesheet" href="{$flizAdminCssUrl|escape:'html'}">
+{/if}
+
 {foreach $flizMessages as $message}
     <div class="alert alert-{$message.type|escape:'html'}">{$message.text|escape:'html'}</div>
 {/foreach}
@@ -6,6 +10,7 @@
     {$flizTokenInput nofilter}
 
     <div class="card mb-4">
+        <div class="card-header">{d__('flizpay', 'API Configuration')}</div>
         <div class="card-body">
             <div class="form-group">
                 <label for="flizApiKeyInput">API-Key</label>
@@ -64,32 +69,75 @@
     </div>
 
     <div class="card mb-4">
-        <div class="card-header">{d__('flizpay', 'Checkout display')}</div>
+        <div class="card-header">{d__('flizpay', 'Checkout Settings')}</div>
         <div class="card-body">
-            <div class="form-group">
-                <label for="flizDisplayLogoInput">{d__('flizpay', 'Show FLIZpay logo')}</label>
-                <select class="custom-select" id="flizDisplayLogoInput" name="flizpay_displayLogo">
-                    <option value="Y"{if $flizDisplayLogo} selected{/if}>{d__('flizpay', 'Yes')}</option>
-                    <option value="N"{if !$flizDisplayLogo} selected{/if}>{d__('flizpay', 'No')}</option>
-                </select>
+            <div class="fliz-checkout-preview">
+                <div class="fliz-checkout-preview__box">
+                    <div class="fliz-checkout-preview__row">
+                        <div class="fliz-checkout-preview__radio"></div>
+                        <span class="fliz-checkout-preview__name">FLIZpay</span>
+                        {if $flizPreviewTitleSuffix !== ''}
+                            <span class="fliz-checkout-preview__title">{$flizPreviewTitleSuffix|escape:'html'}</span>
+                        {/if}
+                        {if $flizLogoUrl !== ''}
+                            <span class="fliz-checkout-preview__logo"
+                                  id="flizPreviewLogo"
+                                  {if !$flizDisplayLogo}hidden{/if}>
+                                <img src="{$flizLogoUrl|escape:'html'}" alt="FLIZpay Logo" width="80" height="28">
+                            </span>
+                        {/if}
+                    </div>
+                    <div class="fliz-checkout-preview__subtitle"
+                         id="flizPreviewSubtitle"
+                         {if !$flizDisplayDescription}hidden{/if}>
+                        {$flizPreviewSubtitle|escape:'html'}
+                    </div>
+                </div>
+                <div class="fliz-checkout-preview__labels">
+                    <span class="fliz-checkout-preview__label"
+                          id="flizLabelLogo"
+                          {if !$flizDisplayLogo}hidden{/if}>{d__('flizpay', 'Logo')}</span>
+                    <span class="fliz-checkout-preview__label"
+                          id="flizLabelSubtitle"
+                          {if !$flizDisplayDescription}hidden{/if}>{d__('flizpay', 'Subtitle')}</span>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="flizDisplayHeadlineInput">{d__('flizpay', 'Show discount in the title ("FLIZpay - Up to X% discount")')}</label>
-                <select class="custom-select" id="flizDisplayHeadlineInput" name="flizpay_displayHeadline">
-                    <option value="Y"{if $flizDisplayHeadline} selected{/if}>{d__('flizpay', 'Yes')}</option>
-                    <option value="N"{if !$flizDisplayHeadline} selected{/if}>{d__('flizpay', 'No')}</option>
-                </select>
-                <small class="form-text text-muted">
-                    {d__('flizpay', 'The discount value is retrieved from your FLIZ company account and kept up to date automatically.')}
-                </small>
+
+            <div class="fliz-checkout-settings">
+                <div class="fliz-checkout-settings__option">
+                    <span class="fliz-checkout-settings__name">{d__('flizpay', 'Logo')}</span>
+                    <input type="hidden" name="flizpay_displayLogo" value="N">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox"
+                               class="custom-control-input"
+                               id="flizDisplayLogoInput"
+                               name="flizpay_displayLogo"
+                               value="Y"
+                               {if $flizDisplayLogo}checked{/if}>
+                        <label class="custom-control-label" for="flizDisplayLogoInput">
+                            {d__('flizpay', 'Show FLIZpay logo in checkout')}
+                        </label>
+                    </div>
+                </div>
+                <div class="fliz-checkout-settings__option">
+                    <span class="fliz-checkout-settings__name">{d__('flizpay', 'Subtitle')}</span>
+                    <input type="hidden" name="flizpay_displayDescription" value="N">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox"
+                               class="custom-control-input"
+                               id="flizDisplayDescriptionInput"
+                               name="flizpay_displayDescription"
+                               value="Y"
+                               {if $flizDisplayDescription}checked{/if}>
+                        <label class="custom-control-label" for="flizDisplayDescriptionInput">
+                            {d__('flizpay', 'Show description in subtitle when FLIZpay is selected')}
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div class="form-group mb-0">
-                <label for="flizDisplayDescriptionInput">{d__('flizpay', 'Show description')}</label>
-                <select class="custom-select" id="flizDisplayDescriptionInput" name="flizpay_displayDescription">
-                    <option value="Y"{if $flizDisplayDescription} selected{/if}>{d__('flizpay', 'Yes')}</option>
-                    <option value="N"{if !$flizDisplayDescription} selected{/if}>{d__('flizpay', 'No')}</option>
-                </select>
-            </div>
+            <small class="form-text text-muted mt-3 mb-0">
+                {d__('flizpay', 'The discount value is retrieved from your FLIZ company account and kept up to date automatically.')}
+            </small>
         </div>
     </div>
 
@@ -156,6 +204,28 @@
                 }
             });
         }
+    })();
+
+    // Live checkout preview: each checkbox instantly shows/hides its preview
+    // element and the matching pointer label; persisted only on Save.
+    (function () {
+        [
+            ['flizDisplayLogoInput', ['flizPreviewLogo', 'flizLabelLogo']],
+            ['flizDisplayDescriptionInput', ['flizPreviewSubtitle', 'flizLabelSubtitle']]
+        ].forEach(function (binding) {
+            var checkbox = document.getElementById(binding[0]);
+            if (!checkbox) {
+                return;
+            }
+            checkbox.addEventListener('change', function () {
+                binding[1].forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) {
+                        el.hidden = !checkbox.checked;
+                    }
+                });
+            });
+        });
     })();
     {/literal}
 </script>

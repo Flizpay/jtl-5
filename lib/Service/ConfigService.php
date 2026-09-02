@@ -136,11 +136,6 @@ class ConfigService
         return ($this->getMerchantSetting('flizpay_displayLogo') ?? 'Y') !== 'N';
     }
 
-    public function displayHeadline(): bool
-    {
-        return ($this->getMerchantSetting('flizpay_displayHeadline') ?? 'Y') !== 'N';
-    }
-
     public function displayDescription(): bool
     {
         return ($this->getMerchantSetting('flizpay_displayDescription') ?? 'Y') !== 'N';

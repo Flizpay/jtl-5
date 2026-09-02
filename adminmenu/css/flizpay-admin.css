@@ -1,0 +1,112 @@
+.fliz-checkout-preview {
+    margin-bottom: 20px;
+}
+
+.fliz-checkout-preview__box {
+    max-width: 500px;
+    margin: 0 auto 16px;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border: 1px solid #ebebeb;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    font-family:
+        "Open Sans",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #525252;
+}
+
+.fliz-checkout-preview__row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.fliz-checkout-preview__radio {
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border: 5px solid #f8bf00;
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px rgba(248, 191, 0, 0.25);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.fliz-checkout-preview__radio::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px;
+    height: 5px;
+    background: #f8bf00;
+    border-radius: 50%;
+}
+
+.fliz-checkout-preview__name,
+.fliz-checkout-preview__title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #525252;
+}
+
+.fliz-checkout-preview__logo {
+    margin-left: auto;
+}
+
+.fliz-checkout-preview__subtitle {
+    margin-top: 0.75rem;
+    margin-left: 36px; /* radio width + gap, aligns with the title */
+    font-size: 0.8125rem;
+    color: #707070;
+    line-height: 1.5;
+}
+
+.fliz-checkout-preview__labels {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.fliz-checkout-preview__label {
+    font-size: 12px;
+    color: #001f3f;
+    font-weight: 500;
+    padding: 4px 8px;
+    background: #80ed99;
+    border-radius: 4px;
+}
+
+.fliz-checkout-preview__label::before {
+    content: "\2191\00a0";
+}
+
+.fliz-checkout-settings {
+    border-top: 1px solid #dee2e6;
+    padding-top: 8px;
+}
+
+.fliz-checkout-settings__option {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.fliz-checkout-settings__option:last-child {
+    border-bottom: none;
+}
+
+.fliz-checkout-settings__name {
+    min-width: 100px;
+    font-weight: 600;
+    color: #001f3f;
+}
