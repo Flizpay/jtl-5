@@ -64,8 +64,7 @@ class CashbackService
                     SET cName = :name, cHinweisTextShop = :descr
                     WHERE kZahlungsart = :pm AND cISOSprache = :iso',
                 [
-                    "name" =>
-                        self::TITLE_PLAIN . $this->previewTitleSuffix($german),
+                    "name" => $this->previewTitle($german),
                     "descr" => $this->config->displayDescription()
                         ? $this->previewDescription($german)
                         : "",
@@ -76,25 +75,42 @@ class CashbackService
         }
     }
 
+    public function previewTitle(bool $german): string
+    {
+        return self::TITLE_PLAIN . $this->previewTitleSuffix($german);
+    }
+
     /**
-     * Cashback suffix appended to the method title, e.g. " - Bis zu 5% Rabatt".
-     * Empty when no cashback is configured. Also used by the admin preview.
+     * Cashback suffix appended to the method title. Empty when no cashback is
+     * configured. Also used by the admin preview.
      */
     public function previewTitleSuffix(bool $german): string
     {
         $cashback = $this->config->getCashback();
-        $maxPct = \max(
-            (float) ($cashback["first_purchase_amount"] ?? 0),
-            (float) ($cashback["standard_amount"] ?? 0),
-        );
-        if ($maxPct <= 0) {
+        $first = (float) ($cashback["first_purchase_amount"] ?? 0);
+        $standard = (float) ($cashback["standard_amount"] ?? 0);
+        if ($first <= 0 && $standard <= 0) {
             return "";
         }
-        $pct = $this->formatPercent($maxPct, $german);
+
+        if ($first > 0 && $standard <= 0) {
+            $pct = $this->formatPercent($first, $german);
+
+            return $german
+                ? \sprintf(" – Spare %s%% bei deiner ersten Zahlung", $pct)
+                : \sprintf(" - Save %s%% on your first payment", $pct);
+        }
+
+        $pct = $this->formatPercent(\max($first, $standard), $german);
+        if ($first > 0 && $standard > 0) {
+            return $german
+                ? \sprintf(" – Spare bis zu %s%%", $pct)
+                : \sprintf(" - Save up to %s%%", $pct);
+        }
 
         return $german
-            ? \sprintf(" - Bis zu %s%% Rabatt", $pct)
-            : \sprintf(" - Up to %s%% Discount", $pct);
+            ? \sprintf(" – Bis zu %s%% Rabatt", $pct)
+            : \sprintf(" - Up to %s%% discount", $pct);
     }
 
     /**

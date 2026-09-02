@@ -15,6 +15,7 @@ use Plugin\flizpay\src\Controller\StatusController;
 use Plugin\flizpay\src\Controller\WebhookController;
 use Plugin\flizpay\src\FlizPlugin;
 use Plugin\flizpay\src\Service\CashbackService;
+use Plugin\flizpay\src\Service\CheckoutPresentationService;
 use Plugin\flizpay\src\Service\ConfigService;
 use Plugin\flizpay\src\Admin\SettingsTab;
 
@@ -71,6 +72,13 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
                 ) {
                     $order->cAbgeholt = "Y";
                 }
+            },
+        );
+
+        $dispatcher->listen(
+            "shop.hook." . \HOOK_SMARTY_OUTPUTFILTER,
+            static function (): void {
+                (new CheckoutPresentationService())->apply();
             },
         );
 

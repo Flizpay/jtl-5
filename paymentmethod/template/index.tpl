@@ -1,3 +1,7 @@
+{if isset($flizPaymentTitle) && $flizPaymentTitle}
+    <h3>{$flizPaymentTitle|escape:'html'}</h3>
+{/if}
+
 {if isset($flizError) && $flizError}
     {row}
         {col}
