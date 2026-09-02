@@ -175,6 +175,7 @@ class FakeOrderService extends OrderService
             'kBestellung'      => 1,
             'kZahlungsart'     => 7,
             'kWarenkorb'       => 42,
+            'kSprache'         => 1,
             'cSession'         => 'checkout-session',
             'cBestellNr'       => 'BN-1',
             'cStatus'          => BESTELLUNG_STATUS_OFFEN,

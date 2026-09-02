@@ -67,4 +67,33 @@ class ReturnControllerTest extends TestCase
             'an unavailable order hash uses the existing fallback',
         );
     }
+
+    public function testReturnUrlCarriesTheOrderLanguage(): void
+    {
+        $this->assertSame(
+            'https://shop.test/flizpay/status?ph=hash&lang=ger',
+            ReturnController::withLanguage(
+                'https://shop.test/flizpay/status?ph=hash',
+                'ger',
+            ),
+            'polling retains the language stored with the order',
+        );
+    }
+
+    public function testLanguageIsNotAddedWhenUnknown(): void
+    {
+        $this->assertSame(
+            'https://shop.test/flizpay/status?ph=hash',
+            ReturnController::withLanguage(
+                'https://shop.test/flizpay/status?ph=hash',
+                '',
+            ),
+        );
+    }
+
+    public function testJtlLanguageCodeMapsToPluginLocale(): void
+    {
+        $this->assertSame('de-DE', ReturnController::localeTag('ger'));
+        $this->assertSame('en-US', ReturnController::localeTag('eng'));
+    }
 }

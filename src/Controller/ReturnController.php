@@ -6,6 +6,7 @@ namespace Plugin\flizpay\src\Controller;
 
 use JTL\Shop;
 use JTL\Session\Frontend;
+use JTL\Language\LanguageHelper;
 use JTL\Smarty\JTLSmarty;
 use Laminas\Diactoros\Response\RedirectResponse;
 use Plugin\flizpay\src\FlizPlugin;
@@ -41,6 +42,7 @@ class ReturnController
         if ($orderData === null || !$orderService->isFlizPayOrder($orderData)) {
             return new RedirectResponse(Shop::getURL() . "/");
         }
+        $language = self::useOrderLanguage((int) $orderData->kSprache);
 
         $state = self::paymentState($kBestellung, $repository, $orderService);
         if ($state === "completed") {
@@ -60,6 +62,7 @@ class ReturnController
             $kBestellung,
             $state,
             $orderService,
+            $language,
         );
     }
 
@@ -192,6 +195,42 @@ class ReturnController
         return $route . "?i=" . \rawurlencode($hash);
     }
 
+    public static function withLanguage(string $url, string $language): string
+    {
+        if ($language === "") {
+            return $url;
+        }
+
+        return $url . (\str_contains($url, "?") ? "&" : "?") .
+            "lang=" .
+            \rawurlencode($language);
+    }
+
+    public static function useOrderLanguage(int $languageId): string
+    {
+        $language = LanguageHelper::getIsoFromLangID($languageId)->cISO ?? "";
+        if ($language !== "") {
+            $_SESSION["kSprache"] = $languageId;
+            $_SESSION["cISOSprache"] = $language;
+            Shop::setLanguage($languageId, $language);
+            LanguageHelper::getInstance()->autoload();
+            Shop::Container()
+                ->getGetText()
+                ->setLanguage(self::localeTag($language));
+        }
+
+        return (string) $language;
+    }
+
+    public static function localeTag(string $language): string
+    {
+        return match ($language) {
+            "ger" => "de-DE",
+            "eng" => "en-US",
+            default => $language,
+        };
+    }
+
     /**
      * Order-status page (carries the "pay again" button for retries).
      */
@@ -224,6 +263,7 @@ class ReturnController
         int $kBestellung,
         string $state,
         OrderService $orderService,
+        string $language,
     ): ResponseInterface {
         $template =
             \dirname(__DIR__, 2) . "/frontend/template/return_polling.tpl";
@@ -231,11 +271,19 @@ class ReturnController
             ->assign("flizState", $state)
             ->assign(
                 "flizPollUrl",
-                Shop::getURL() . "/flizpay/status?ph=" . \rawurlencode($ph),
+                self::withLanguage(
+                    Shop::getURL() .
+                        "/flizpay/status?ph=" .
+                        \rawurlencode($ph),
+                    $language,
+                ),
             )
             ->assign(
                 "flizStatusUrl",
-                self::orderStatusUrl($kBestellung, $orderService),
+                self::withLanguage(
+                    self::orderStatusUrl($kBestellung, $orderService),
+                    $language,
+                ),
             )
             ->assign("flizLang", [
                 "processingHeading" => \d__(

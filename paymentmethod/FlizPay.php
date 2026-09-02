@@ -173,7 +173,11 @@ class FlizPay extends Method
                     "successUrl" =>
                         Shop::getURL() .
                         "/flizpay/return?ph=" .
-                        \rawurlencode($hash),
+                        \rawurlencode($hash) .
+                        "&lang=" .
+                        \rawurlencode(
+                            (string) ($_SESSION["cISOSprache"] ?? ""),
+                        ),
                     "failureUrl" => self::FAILURE_URL,
                     "customer" => [
                         "email" =>

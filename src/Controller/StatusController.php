@@ -40,6 +40,7 @@ class StatusController
         if ($orderData === null || !$orderService->isFlizPayOrder($orderData)) {
             return new JsonResponse(["state" => "unknown"], 404, $headers);
         }
+        ReturnController::useOrderLanguage((int) $orderData->kSprache);
         $state = ReturnController::paymentState(
             $kBestellung,
             $repository,
