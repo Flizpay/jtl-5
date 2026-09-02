@@ -168,6 +168,43 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-header">{d__('flizpay', 'Discount Information')}</div>
+        <div class="card-body">
+            <div class="fliz-discount-info">
+                {if $flizHasDiscount}
+                    <div class="fliz-discount-info__box fliz-discount-info__box--active">
+                        <strong>{d__('flizpay', 'Current Discount Rates:')}</strong>
+                        <ul class="fliz-discount-info__list">
+                            {if $flizFirstPurchaseDiscount !== ''}
+                                <li>
+                                    {d__('flizpay', 'First Purchase')}:
+                                    {$flizFirstPurchaseDiscount|escape:'html'}%
+                                </li>
+                            {/if}
+                            {if $flizStandardDiscount !== ''}
+                                <li>
+                                    {d__('flizpay', 'Standard')}:
+                                    {$flizStandardDiscount|escape:'html'}%
+                                </li>
+                            {/if}
+                        </ul>
+                    </div>
+                {else}
+                    <div class="fliz-discount-info__box fliz-discount-info__box--empty">
+                        {d__('flizpay', 'No discount is currently configured. Enable discounts in your FLIZ company account to offer savings to your customers.')}
+                    </div>
+                {/if}
+                <p class="fliz-discount-info__configure">
+                    {d__('flizpay', 'Configure discount rates in your')}
+                    <a href="https://app.flizpay.de/discount" target="_blank" rel="noopener">
+                        {d__('flizpay', 'FLIZpay Dashboard')}
+                    </a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="mb-4 text-right">
         <button type="submit" name="flizAction" value="save" class="btn btn-primary">
             {d__('flizpay', 'Save')}

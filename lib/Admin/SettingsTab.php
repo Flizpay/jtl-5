@@ -48,6 +48,10 @@ class SettingsTab
     {
         $messages = $this->handleAction();
         $cashbackService = new CashbackService($this->db, $this->config);
+        $cashback = $this->config->getCashback();
+        $germanAdmin = $this->isGermanAdmin();
+        $firstPurchaseDiscount = (float) ($cashback["first_purchase_amount"] ?? 0);
+        $standardDiscount = (float) ($cashback["standard_amount"] ?? 0);
 
         $apiKey = $this->config->getApiKey();
         $handshakeAt = $this->config->get(ConfigService::KEY_HANDSHAKE_AT);
@@ -78,15 +82,37 @@ class SettingsTab
             ->assign("flizPaymentLogUrl", $this->getPaymentLogUrl())
             ->assign("flizLogoUrl", $this->getLogoUrl())
             ->assign("flizAdminCssUrl", $this->getAdminCssUrl())
-            ->assign(
-                "flizPreviewTitleSuffix",
-                $cashbackService->previewTitleSuffix($this->isGermanAdmin()),
-            )
-            ->assign(
-                "flizPreviewSubtitle",
-                $cashbackService->previewDescription($this->isGermanAdmin()),
-            )
-            ->assign("flizAwaitingTest", $awaitingTest)
+             ->assign(
+                 "flizPreviewTitleSuffix",
+                 $cashbackService->previewTitleSuffix($germanAdmin),
+             )
+             ->assign(
+                 "flizPreviewSubtitle",
+                 $cashbackService->previewDescription($germanAdmin),
+             )
+             ->assign(
+                 "flizFirstPurchaseDiscount",
+                 $firstPurchaseDiscount > 0
+                     ? $cashbackService->formatPercent(
+                         $firstPurchaseDiscount,
+                         $germanAdmin,
+                     )
+                     : "",
+             )
+             ->assign(
+                 "flizStandardDiscount",
+                 $standardDiscount > 0
+                     ? $cashbackService->formatPercent(
+                         $standardDiscount,
+                         $germanAdmin,
+                     )
+                     : "",
+             )
+             ->assign(
+                 "flizHasDiscount",
+                 $firstPurchaseDiscount > 0 || $standardDiscount > 0,
+             )
+             ->assign("flizAwaitingTest", $awaitingTest)
             ->fetch($this->getTemplatePath());
     }
 

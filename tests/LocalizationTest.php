@@ -26,4 +26,15 @@ class LocalizationTest extends TestCase
         $this->assertTrue(\is_file(__DIR__ . '/../locale/en-GB/base.mo'));
         $this->assertTrue(\is_file(__DIR__ . '/../locale/en-US/base.mo'));
     }
+
+    public function testCatalogsContainDiscountInformationCardTranslations(): void
+    {
+        foreach (['de-DE', 'en-GB', 'en-US'] as $locale) {
+            $catalog = (string)\file_get_contents(__DIR__ . '/../locale/' . $locale . '/base.po');
+
+            $this->assertTrue(\str_contains($catalog, 'msgid "Discount Information"'));
+            $this->assertTrue(\str_contains($catalog, 'msgid "Current Discount Rates:"'));
+            $this->assertTrue(\str_contains($catalog, 'msgid "First Purchase"'));
+        }
+    }
 }

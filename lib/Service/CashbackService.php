@@ -193,7 +193,10 @@ class CashbackService
         }
     }
 
-    private function formatPercent(float $value, bool $german): string
+    /**
+     * Formats a provider percentage for checkout and admin presentation.
+     */
+    public function formatPercent(float $value, bool $german): string
     {
         $formatted = \rtrim(
             \rtrim(\number_format($value, 2, ".", ""), "0"),

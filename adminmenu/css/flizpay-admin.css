@@ -110,3 +110,35 @@
     font-weight: 600;
     color: #001f3f;
 }
+
+.fliz-discount-info__box {
+    max-width: 500px;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+.fliz-discount-info__box--active {
+    background: #eefaf5;
+    border: 1px solid #57cc99;
+}
+
+.fliz-discount-info__box--empty {
+    background: #fff3cd;
+    border: 1px solid #f8bf00;
+    color: #664d03;
+}
+
+.fliz-discount-info__list {
+    margin: 8px 0 0 20px;
+    padding: 0;
+}
+
+.fliz-discount-info__configure {
+    margin: 0;
+}
+
+.fliz-discount-info__configure a {
+    color: #218c61;
+    font-weight: 600;
+}

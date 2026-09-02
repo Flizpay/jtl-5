@@ -153,3 +153,24 @@ msgstr "Log file"
 
 msgid "Open FLIZpay payment log"
 msgstr "Open FLIZpay payment log"
+
+msgid "Discount Information"
+msgstr "Discount Information"
+
+msgid "Current Discount Rates:"
+msgstr "Current Discount Rates:"
+
+msgid "First Purchase"
+msgstr "First Purchase"
+
+msgid "Standard"
+msgstr "Standard"
+
+msgid "No discount is currently configured. Enable discounts in your FLIZ company account to offer savings to your customers."
+msgstr "No discount is currently configured. Enable discounts in your FLIZ company account to offer savings to your customers."
+
+msgid "Configure discount rates in your"
+msgstr "Configure discount rates in your"
+
+msgid "FLIZpay Dashboard"
+msgstr "FLIZpay Dashboard"

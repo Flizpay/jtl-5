@@ -153,3 +153,24 @@ msgstr "Protokolldatei"
 
 msgid "Open FLIZpay payment log"
 msgstr "FLIZpay-Zahlungsprotokoll öffnen"
+
+msgid "Discount Information"
+msgstr "Rabattinformationen"
+
+msgid "Current Discount Rates:"
+msgstr "Aktuelle Rabattsätze:"
+
+msgid "First Purchase"
+msgstr "Erstkauf"
+
+msgid "Standard"
+msgstr "Standard"
+
+msgid "No discount is currently configured. Enable discounts in your FLIZ company account to offer savings to your customers."
+msgstr "Derzeit ist kein Rabatt konfiguriert. Aktiviere Rabatte in deinem FLIZ-Firmenkonto, um deinen Kunden Ersparnisse anzubieten."
+
+msgid "Configure discount rates in your"
+msgstr "Konfiguriere Rabattsätze in deinem"
+
+msgid "FLIZpay Dashboard"
+msgstr "FLIZpay-Dashboard"
