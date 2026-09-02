@@ -158,6 +158,3 @@ msgstr "Log file"
 
 msgid "Open FLIZpay payment log"
 msgstr "Open FLIZpay payment log"
-
-msgid "Debug logging is active."
-msgstr "Debug logging is active."

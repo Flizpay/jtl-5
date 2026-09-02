@@ -165,11 +165,6 @@
                     &middot; <a href="{$flizPaymentLogUrl|escape:'html'}">{d__('flizpay', 'Open FLIZpay payment log')}</a>
                 {/if}
             </p>
-            {if $flizDebugMode}
-                <div class="alert alert-warning mt-3 mb-0">
-                    {d__('flizpay', 'Debug logging is active.')}
-                </div>
-            {/if}
         </div>
     </div>
 

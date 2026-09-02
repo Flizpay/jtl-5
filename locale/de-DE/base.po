@@ -159,6 +159,3 @@ msgstr "Protokolldatei"
 
 msgid "Open FLIZpay payment log"
 msgstr "FLIZpay-Zahlungsprotokoll öffnen"
-
-msgid "Debug logging is active."
-msgstr "Debug-Protokollierung ist aktiv."
