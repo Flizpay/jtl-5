@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Plugin\flizpay\src\Controller;
 
 use JTL\Shop;
+use JTL\Session\Frontend;
 use JTL\Smarty\JTLSmarty;
 use Laminas\Diactoros\Response\RedirectResponse;
 use Plugin\flizpay\src\FlizPlugin;
 use Plugin\flizpay\src\Service\OrderService;
 use Plugin\flizpay\src\Service\TransactionRepository;
-use Plugin\flizpay\paymentmethod\FlizPay;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -44,6 +44,11 @@ class ReturnController
 
         $state = self::paymentState($kBestellung, $repository, $orderService);
         if ($state === "completed") {
+            self::cleanUpPurchasedCart(
+                (int) $orderData->kWarenkorb,
+                (string) $orderData->cSession,
+            );
+
             return new RedirectResponse(
                 self::successTarget($kBestellung, $orderService),
             );
@@ -97,6 +102,53 @@ class ReturnController
         return "pending";
     }
 
+    public static function shouldCleanUpCart(
+        int $orderCartId,
+        int $sessionCartId,
+        string $orderSessionId,
+        string $sessionId,
+    ): bool {
+        if ($orderCartId <= 0) {
+            return false;
+        }
+        if ($sessionCartId > 0) {
+            return $orderCartId === $sessionCartId;
+        }
+
+        return $orderSessionId !== "" && $orderSessionId === $sessionId;
+    }
+
+    public static function cleanUpPurchasedCart(
+        int $orderCartId,
+        string $orderSessionId,
+    ): void {
+        try {
+            $sessionCartId = (int) (Frontend::getCart()->kWarenkorb ?? 0);
+            $sessionId = \session_id();
+            $cleanUp = self::shouldCleanUpCart(
+                $orderCartId,
+                $sessionCartId,
+                $orderSessionId,
+                $sessionId,
+            );
+            FlizPlugin::debug("return cart cleanup", [
+                "orderCart" => $orderCartId,
+                "sessionCart" => $sessionCartId,
+                "sameSession" =>
+                    $orderSessionId !== "" && $orderSessionId === $sessionId,
+                "cleaned" => $cleanUp,
+            ]);
+            if ($cleanUp) {
+                Frontend::getInstance()->cleanUp();
+            }
+        } catch (\Throwable $e) {
+            FlizPlugin::log("return cart cleanup failed", \LOGLEVEL_ERROR, [
+                "cart" => $orderCartId,
+                "error" => $e->getMessage(),
+            ]);
+        }
+    }
+
     /**
      * Confirmation target for a paid order — the payment method's own
      * getReturnURL (Abschlussseite when configured, order-status page
@@ -107,14 +159,19 @@ class ReturnController
         ?OrderService $orderService = null,
     ): string {
         try {
-            $orderService ??= new OrderService();
-            $order = $orderService->loadOrder($kBestellung);
-            if ($order !== null) {
-                $paymentMethod = new FlizPay(FlizPlugin::getModuleId());
-                $url = $paymentMethod->getReturnURL($order);
-                if (\is_string($url) && $url !== "") {
-                    return $url;
-                }
+            $hash =
+                FlizPlugin::getDB()->getSingleObject(
+                    "SELECT cId FROM tbestellid WHERE kBestellung = :oid",
+                    ["oid" => $kBestellung],
+                )->cId ?? "";
+            $url = self::completionUrl(
+                Shop::Container()
+                    ->getLinkService()
+                    ->getStaticRoute("bestellabschluss.php"),
+                (string) $hash,
+            );
+            if ($url !== null) {
+                return $url;
             }
         } catch (\Throwable $e) {
             FlizPlugin::log("successTarget failed", \LOGLEVEL_ERROR, [
@@ -123,7 +180,16 @@ class ReturnController
             ]);
         }
 
-        return Shop::getURL() . "/";
+        return self::orderStatusUrl($kBestellung, $orderService);
+    }
+
+    public static function completionUrl(string $route, string $hash): ?string
+    {
+        if ($route === "" || $hash === "") {
+            return null;
+        }
+
+        return $route . "?i=" . \rawurlencode($hash);
     }
 
     /**

@@ -47,6 +47,10 @@ class StatusController
         );
         $payload = ["state" => $state];
         if ($state === "completed") {
+            ReturnController::cleanUpPurchasedCart(
+                (int) $orderData->kWarenkorb,
+                (string) $orderData->cSession,
+            );
             $payload["redirectUrl"] = ReturnController::successTarget(
                 $kBestellung,
                 $orderService,

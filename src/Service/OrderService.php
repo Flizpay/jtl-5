@@ -158,7 +158,7 @@ class OrderService
     public function getOrderData(int $kBestellung): ?stdClass
     {
         return $this->db->getSingleObject(
-            'SELECT kBestellung, kZahlungsart, kWarenkorb, cBestellNr, cStatus, cAbgeholt,
+            'SELECT kBestellung, kZahlungsart, kWarenkorb, cSession, cBestellNr, cStatus, cAbgeholt,
                     dBezahltDatum, fGesamtsumme, fWaehrungsFaktor
                 FROM tbestellung
                 WHERE kBestellung = :oid',
