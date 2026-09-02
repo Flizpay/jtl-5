@@ -236,30 +236,4 @@ class TransactionRepository
         ) === 1;
     }
 
-    /**
-     * Open FLIZpay payments for the backend status tab: every order without a
-     * payment date, shown with its most recent transaction (which, after a
-     * failure, is no longer the current-attempt one).
-     *
-     * @return stdClass[]
-     */
-    public function listOpenForAdmin(int $limit = 25): array
-    {
-        return $this->db->getObjects(
-            "SELECT o.kBestellung, o.nAttempt, o.dCreated, o.nPaid, b.cBestellNr, b.cStatus AS orderStatus,
-                    t.cTransactionId, t.cStatus AS txStatus, t.fOriginalAmount, t.cCurrency
-                FROM xplugin_flizpay_order AS o
-                JOIN tbestellung AS b
-                    ON b.kBestellung = o.kBestellung
-                LEFT JOIN xplugin_flizpay_transaction AS t
-                    ON t.kFlizTransaction = (
-                        SELECT MAX(t2.kFlizTransaction)
-                            FROM xplugin_flizpay_transaction AS t2
-                            WHERE t2.kBestellung = o.kBestellung
-                    )
-                WHERE b.dBezahltDatum IS NULL
-                ORDER BY o.dCreated DESC
-                LIMIT " . \max(1, $limit),
-        );
-    }
 }

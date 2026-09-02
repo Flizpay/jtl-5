@@ -14,7 +14,6 @@ use Plugin\flizpay\lib\Service\CashbackService;
 use Plugin\flizpay\lib\Service\ConfigService;
 use Plugin\flizpay\lib\Service\ConnectionService;
 use Plugin\flizpay\lib\Service\Logger;
-use Plugin\flizpay\lib\Service\TransactionRepository;
 
 /**
  * The "Settings" tab owns the whole settings lifecycle: it saves the merchant
@@ -38,14 +37,11 @@ class SettingsTab
 
     private ConfigService $config;
 
-    private TransactionRepository $repository;
-
     public function __construct(
         private readonly DbInterface $db,
         private readonly ?PluginInterface $plugin,
     ) {
         $this->config = new ConfigService($this->db);
-        $this->repository = new TransactionRepository($this->db);
     }
 
     public function render(JTLSmarty $smarty): string
@@ -91,7 +87,6 @@ class SettingsTab
                 $cashbackService->previewDescription($this->isGermanAdmin()),
             )
             ->assign("flizAwaitingTest", $awaitingTest)
-            ->assign("flizOpenPayments", $this->repository->listOpenForAdmin())
             ->fetch($this->getTemplatePath());
     }
 

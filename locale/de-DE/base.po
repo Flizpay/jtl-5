@@ -88,12 +88,6 @@ msgstr "Der Webhook-Schlüssel fehlt – bitte die Einstellungen erneut speicher
 msgid "Waiting for the FLIZpay test notification. The shop must be publicly accessible (no password protection, no IP restriction, and a valid SSL certificate)."
 msgstr "Warten auf die Test-Benachrichtigung von FLIZpay. Der Shop muss dafür öffentlich erreichbar sein (kein Passwortschutz, keine IP-Sperre, gültiges SSL-Zertifikat)."
 
-msgid "Open FLIZpay payments"
-msgstr "Offene FLIZpay-Zahlungen"
-
-msgid "There are currently no open FLIZpay payments."
-msgstr "Aktuell gibt es keine offenen FLIZpay-Zahlungen."
-
 msgid "Order"
 msgstr "Bestellung"
 

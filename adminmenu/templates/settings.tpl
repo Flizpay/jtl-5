@@ -175,46 +175,6 @@
     </div>
 </form>
 
-<div class="card">
-    <div class="card-header">{d__('flizpay', 'Open FLIZpay payments')}</div>
-    <div class="card-body p-0">
-        {if $flizOpenPayments|@count === 0}
-            <p class="text-muted p-3 mb-0">{d__('flizpay', 'There are currently no open FLIZpay payments.')}</p>
-        {else}
-            <div class="table-responsive">
-                <table class="table table-sm mb-0">
-                    <thead>
-                        <tr>
-                            <th>{d__('flizpay', 'Order')}</th>
-                            <th>{d__('flizpay', 'Created')}</th>
-                            <th>{d__('flizpay', 'Attempt')}</th>
-                            <th>{d__('flizpay', 'Transaction')}</th>
-                            <th>Status</th>
-                            <th>{d__('flizpay', 'Amount')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {foreach $flizOpenPayments as $payment}
-                            <tr>
-                                <td>{$payment->cBestellNr|escape:'html'}</td>
-                                <td>{$payment->dCreated|escape:'html'}</td>
-                                <td>{$payment->nAttempt|escape:'html'}</td>
-                                <td><code class="small">{$payment->cTransactionId|default:'—'|escape:'html'}</code></td>
-                                <td>{$payment->txStatus|default:'—'|escape:'html'}</td>
-                                <td>
-                                    {if $payment->fOriginalAmount}
-                                        {$payment->fOriginalAmount|string_format:"%.2f"} {$payment->cCurrency|escape:'html'}
-                                    {else}—{/if}
-                                </td>
-                            </tr>
-                        {/foreach}
-                    </tbody>
-                </table>
-            </div>
-        {/if}
-    </div>
-</div>
-
 <script>
     {literal}
     (function () {
