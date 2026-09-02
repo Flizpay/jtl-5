@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Plugin\flizpay\lib\Service;
 
-use Plugin\flizpay\lib\FlizPlugin;
+use JTL\Checkout\PaymentLog\PaymentLogService;
+use JTL\Checkout\PaymentLog\Repositories\PaymentLogDomainObject;
 use JTL\Checkout\ZahlungsLog;
+use Plugin\flizpay\lib\FlizPlugin;
 
 /**
  * Plugin log with a merchant-controlled debug switch.
@@ -89,9 +91,39 @@ final class Logger
         if ($level === \LOGLEVEL_DEBUG) {
             return;
         }
+        self::writePaymentLog(FlizPlugin::getModuleId(), $line, $data, $level);
+    }
+
+    /**
+     * tzahlungslog entry. PaymentLogService exists since 5.8.0 and replaces
+     * the deprecated ZahlungsLog::add(); shops 5.3–5.7 only have the latter.
+     */
+    private static function writePaymentLog(
+        string $moduleId,
+        string $line,
+        string $data,
+        int $level,
+    ): void {
+        if ($moduleId === "") {
+            return;
+        }
         try {
-            ZahlungsLog::add(FlizPlugin::getModuleId(), $line, $data, $level);
+            if (\class_exists(PaymentLogService::class)) {
+                (new PaymentLogService())->insert(
+                    new PaymentLogDomainObject(
+                        null,
+                        $moduleId,
+                        $line,
+                        $data,
+                        $level,
+                    ),
+                );
+
+                return;
+            }
+            ZahlungsLog::add($moduleId, $line, $data, $level);
         } catch (\Throwable) {
+            // never let logging break payment processing
         }
     }
 
