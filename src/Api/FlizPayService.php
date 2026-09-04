@@ -127,11 +127,10 @@ class FlizPayService
     public function fetchCashback(): ?array
     {
         $res = $this->client->request("GET", "/business/cashback");
-        $cashbacks = $res["data"]["cashbacks"] ?? null;
         if (
             $res["status"] < 200 ||
             $res["status"] >= 300 ||
-            !\is_array($cashbacks)
+            !\is_array($res["data"])
         ) {
             FlizPlugin::debug("fetchCashback: unreadable response", [
                 "http" => $res["status"],
@@ -139,22 +138,66 @@ class FlizPayService
 
             return null;
         }
-        FlizPlugin::debug("fetchCashback", ["count" => \count($cashbacks)]);
+
+        return self::normalizeCashback($res["data"]);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array{first_purchase_amount: float, standard_amount: float}|null
+     */
+    public static function normalizeCashback(array $data): ?array
+    {
+        $cashback = $data["cashback"] ?? null;
+        if (\is_array($cashback)) {
+            return self::normalizeCashbackEntry($cashback);
+        }
+
+        // Older API versions returned a list of campaigns.
+        $cashbacks = $data["cashbacks"] ?? null;
+        if (!\is_array($cashbacks)) {
+            return null;
+        }
         foreach ($cashbacks as $cashback) {
             if (!\is_array($cashback) || empty($cashback["active"])) {
                 continue;
             }
-            $first = (float) ($cashback["firstPurchaseAmount"] ?? 0);
-            $standard = (float) ($cashback["amount"] ?? 0);
-            if ($first > 0 || $standard > 0) {
-                return [
-                    "first_purchase_amount" => $first,
-                    "standard_amount" => $standard,
-                ];
+            $normalized = self::normalizeCashbackEntry($cashback);
+            if ($normalized !== null) {
+                return $normalized;
             }
         }
 
         return null;
+    }
+
+    /**
+     * @param array<string, mixed> $cashback
+     * @return array{first_purchase_amount: float, standard_amount: float}|null
+     */
+    private static function normalizeCashbackEntry(array $cashback): ?array
+    {
+        $first = $cashback["firstPurchaseAmount"] ?? null;
+        $standard = $cashback["amount"] ?? null;
+        if (!\is_numeric($first) || !\is_numeric($standard)) {
+            return null;
+        }
+
+        $first = (float) $first;
+        $standard = (float) $standard;
+        if (
+            !\is_finite($first) ||
+            !\is_finite($standard) ||
+            $first < 0 ||
+            $standard < 0
+        ) {
+            return null;
+        }
+
+        return [
+            "first_purchase_amount" => $first,
+            "standard_amount" => $standard,
+        ];
     }
 
     /**
