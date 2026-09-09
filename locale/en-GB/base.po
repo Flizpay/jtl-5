@@ -173,3 +173,54 @@ msgstr "Configure discount rates in your"
 
 msgid "FLIZpay Dashboard"
 msgstr "FLIZpay Dashboard"
+
+msgid "Welcome to FLIZpay!"
+msgstr "Welcome to FLIZpay!"
+
+msgid "Instructions:"
+msgstr "Instructions:"
+
+msgid "If you don't yet have a FLIZpay business account, please"
+msgstr "If you don't yet have a FLIZpay business account, please"
+
+msgid "click here"
+msgstr "click here"
+
+msgid "to create one."
+msgstr "to create one."
+
+msgid "Generate an API key in your FLIZpay business account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\" and paste it into the \"API Key\" field below."
+msgstr "Generate an API key in your FLIZpay business account under \"Set up FLIZ\" -> \"Plugins\" -> \"JTL\" and paste it into the \"API Key\" field below."
+
+msgid "Click \"Save\"."
+msgstr "Click \"Save\"."
+
+msgid "The page reloads automatically every few seconds while waiting for the FLIZpay test notification."
+msgstr "The page reloads automatically every few seconds while waiting for the FLIZpay test notification."
+
+msgid "As soon as a green confirmation message appears, the plugin is fully configured."
+msgstr "As soon as a green confirmation message appears, the plugin is fully configured."
+
+msgid "Assign FLIZpay to your shipping methods and customer groups:"
+msgstr "Assign FLIZpay to your shipping methods and customer groups:"
+
+msgid "Go to Shipping Methods"
+msgstr "Go to Shipping Methods"
+
+msgid "If you use JTL-Wawi: create a payment method named exactly \"FLIZpay\" in JTL-Wawi under \"Zahlungen\" -> \"Zahlungsarten\". JTL-Wawi links shop and Wawi payment methods automatically when the names match exactly. For multi-language shops, also set the name for every language. Otherwise imported orders and payments are not assigned to a payment method in JTL-Wawi and invoices show no payment method."
+msgstr "If you use JTL-Wawi: create a payment method named exactly \"FLIZpay\" in JTL-Wawi under \"Zahlungen\" -> \"Zahlungsarten\". JTL-Wawi links shop and Wawi payment methods automatically when the names match exactly. For multi-language shops, also set the name for every language. Otherwise imported orders and payments are not assigned to a payment method in JTL-Wawi and invoices show no payment method."
+
+msgid "We recommend activating discounts for your customers in your"
+msgstr "We recommend activating discounts for your customers in your"
+
+msgid "Still have questions? Check out our"
+msgstr "Still have questions? Check out our"
+
+msgid "FAQ page"
+msgstr "FAQ page"
+
+msgid "Need more details? Read our"
+msgstr "Need more details? Read our"
+
+msgid "documentation"
+msgstr "documentation"

@@ -37,4 +37,19 @@ class LocalizationTest extends TestCase
             $this->assertTrue(\str_contains($catalog, 'msgid "First Purchase"'));
         }
     }
+
+    public function testCatalogsContainWelcomeCardTranslations(): void
+    {
+        foreach (['de-DE', 'en-GB', 'en-US'] as $locale) {
+            $catalog = (string)\file_get_contents(__DIR__ . '/../locale/' . $locale . '/base.po');
+
+            $this->assertTrue(\str_contains($catalog, 'msgid "Welcome to FLIZpay!"'));
+            $this->assertTrue(\str_contains($catalog, 'msgid "Instructions:"'));
+            $this->assertTrue(\str_contains($catalog, 'msgid "Go to Shipping Methods"'));
+            $this->assertTrue(\str_contains(
+                $catalog,
+                'msgid "If you use JTL-Wawi: create a payment method named exactly \"FLIZpay\"',
+            ));
+        }
+    }
 }
