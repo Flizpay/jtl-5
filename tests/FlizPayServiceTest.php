@@ -6,6 +6,24 @@ use Plugin\flizpay\src\Api\FlizPayService;
 
 class FlizPayServiceTest extends TestCase
 {
+    public function testPaymentKeyIsStableForTheSameOrderAndAttempt(): void
+    {
+        $key = FlizPayService::transactionIdempotencyKey(1, 'order-hash-a', 0);
+        $this->assertSame($key, FlizPayService::transactionIdempotencyKey(1, 'order-hash-a', 0));
+        $this->assertSame(68, strlen($key));
+        $this->assertTrue(str_starts_with($key, 'jtl-'));
+        $this->assertFalse(str_contains($key, 'order-hash-a'));
+    }
+
+    public function testPaymentKeyDistinguishesRecreatedOrdersAndRetries(): void
+    {
+        $key = FlizPayService::transactionIdempotencyKey(1, 'order-hash-a', 0);
+        $this->assertFalse($key === FlizPayService::transactionIdempotencyKey(1, 'order-hash-b', 0));
+        $this->assertFalse($key === FlizPayService::transactionIdempotencyKey(1, 'order-hash-a', 1));
+        $this->assertFalse($key === FlizPayService::transactionIdempotencyKey(2, 'order-hash-a', 0));
+        $this->assertFalse($key === 'jtl-' . hash('sha256', '1:0'));
+    }
+
     public function testNormalizesCurrentCashbackResponse(): void
     {
         $this->assertSame(

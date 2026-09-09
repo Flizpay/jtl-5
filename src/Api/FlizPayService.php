@@ -20,6 +20,16 @@ class FlizPayService
         );
     }
 
+    public static function transactionIdempotencyKey(
+        int $orderId,
+        string $orderHash,
+        int $attempt,
+    ): string {
+        // The stored order hash distinguishes new orders after numeric IDs are reset.
+        return "jtl-" .
+            \hash("sha256", $orderId . ":" . $orderHash . ":" . $attempt);
+    }
+
     /**
      * @return array{transactionId:string, reference:string, redirectUrl:string}|null
      */

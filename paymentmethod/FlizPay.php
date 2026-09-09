@@ -191,7 +191,11 @@ class FlizPay extends Method
                     ],
                     "source" => self::SOURCE,
                 ],
-                "jtl-" . \hash("sha256", $kBestellung . ":" . $attempt),
+                FlizPayService::transactionIdempotencyKey(
+                    $kBestellung,
+                    $hash,
+                    $attempt,
+                ),
             );
             if ($transaction === null) {
                 throw new \RuntimeException(
