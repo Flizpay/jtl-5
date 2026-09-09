@@ -46,13 +46,23 @@ catalogs, and creates `dist/flizpay-<version>.zip`.
    and current discount information.
 4. FLIZpay immediately sends a test notification to the shop. Once it arrives, the
    connection status below the API key field switches to *connected*.
-5. Assign FLIZpay to the required customer groups and shipping methods under
-   **Payment methods**.
+5. Assign FLIZpay to the required customer groups and shipping methods by editing
+   the shipping method under **Shipping methods** (Versandarten).
 
 > **Important:** FLIZpay is only offered during checkout after the test notification
 > has arrived. The shop must be publicly accessible, without password protection or IP
 > restrictions, and must use a valid SSL certificate. This does not work on staging
 > systems protected with HTTP Basic Authentication.
+
+## JTL-Wawi setup
+
+If you use JTL-Wawi, create a payment method named exactly **FLIZpay** in JTL-Wawi
+under **Zahlungen > Zahlungsarten**. JTL-Wawi links shop and Wawi payment methods
+automatically when the names match exactly. For multi-language shops, also set the
+name for every language.
+
+Without this, imported orders and payments are not assigned to a payment method in
+JTL-Wawi and invoices show no payment method.
 
 ## Discounts and cashback
 

@@ -10,6 +10,41 @@
     {$flizTokenInput nofilter}
 
     <div class="card mb-4">
+        <div class="card-header">{d__('flizpay', 'Welcome to FLIZpay!')}</div>
+        <div class="card-body">
+            <p><strong>{d__('flizpay', 'Instructions:')}</strong></p>
+            <ol class="mb-3">
+                <li>
+                    {d__('flizpay', "If you don't yet have a FLIZpay business account, please")}
+                    <a href="https://app.flizpay.de/auth/signup" target="_blank" rel="noopener">{d__('flizpay', 'click here')}</a>
+                    {d__('flizpay', 'to create one.')}
+                </li>
+                <li>{d__('flizpay', 'Generate an API key in your FLIZpay business account under "Set up FLIZ" -> "Plugins" -> "JTL" and paste it into the "API Key" field below.')}</li>
+                <li>{d__('flizpay', 'Click "Save".')}</li>
+                <li>{d__('flizpay', 'The page reloads automatically every few seconds while waiting for the FLIZpay test notification.')}</li>
+                <li>{d__('flizpay', 'As soon as a green confirmation message appears, the plugin is fully configured.')}</li>
+                <li>
+                    {d__('flizpay', 'Assign FLIZpay to your shipping methods and customer groups:')}
+                    <a href="{$flizShippingMethodsUrl|escape:'html'}">{d__('flizpay', 'Go to Shipping Methods')}</a>
+                </li>
+                <li>{d__('flizpay', 'If you use JTL-Wawi: create a payment method named exactly "FLIZpay" in JTL-Wawi under "Zahlungen" -> "Zahlungsarten". JTL-Wawi links shop and Wawi payment methods automatically when the names match exactly. For multi-language shops, also set the name for every language. Otherwise imported orders and payments are not assigned to a payment method in JTL-Wawi and invoices show no payment method.')}</li>
+                <li>
+                    {d__('flizpay', 'We recommend activating discounts for your customers in your')}
+                    <a href="https://app.flizpay.de/discount" target="_blank" rel="noopener">{d__('flizpay', 'FLIZpay Dashboard')}</a>.
+                </li>
+            </ol>
+            <p class="mb-1">
+                {d__('flizpay', 'Still have questions? Check out our')}
+                <a href="https://flizpay.de/businesses#how-do-i-install-fliz" target="_blank" rel="noopener">{d__('flizpay', 'FAQ page')}</a>.
+            </p>
+            <p class="mb-0">
+                {d__('flizpay', 'Need more details? Read our')}
+                <a href="https://www.docs.flizpay.de/docs/intro" target="_blank" rel="noopener">{d__('flizpay', 'documentation')}</a>.
+            </p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
         <div class="card-header">{d__('flizpay', 'API Configuration')}</div>
         <div class="card-body">
             <div class="form-group">

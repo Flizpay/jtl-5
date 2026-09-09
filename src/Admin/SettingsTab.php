@@ -80,6 +80,7 @@ class SettingsTab
             ->assign("flizDebugMode", $this->config->debugMode())
             ->assign("flizLogFile", Logger::getFilePath())
             ->assign("flizPaymentLogUrl", $this->getPaymentLogUrl())
+            ->assign("flizShippingMethodsUrl", $this->getShippingMethodsUrl())
             ->assign("flizLogoUrl", $this->getLogoUrl())
             ->assign("flizAdminCssUrl", $this->getAdminCssUrl())
              ->assign(
@@ -319,17 +320,37 @@ class SettingsTab
         if ($methodId <= 0 || $token === "") {
             return "";
         }
-        $route = \defined('JTL\Router\Route::PAYMENT_METHODS')
-            ? \JTL\Router\Route::PAYMENT_METHODS
-            : "paymentmethods";
 
-        return \rtrim(Shop::getAdminURL(), "/") .
-            "/" .
-            $route .
+        return $this->getPaymentMethodsUrl() .
             "?a=log&kZahlungsart=" .
             $methodId .
             "&token=" .
             \rawurlencode($token);
+    }
+
+    /**
+     * Backend overview of all payment methods (settings and log views).
+     */
+    private function getPaymentMethodsUrl(): string
+    {
+        $route = \defined('JTL\Router\Route::PAYMENT_METHODS')
+            ? \JTL\Router\Route::PAYMENT_METHODS
+            : "paymentmethods";
+
+        return \rtrim(Shop::getAdminURL(), "/") . "/" . $route;
+    }
+
+    /**
+     * Backend overview of the shipping methods; editing a shipping method is
+     * where FLIZpay is assigned to shipping methods and customer groups.
+     */
+    private function getShippingMethodsUrl(): string
+    {
+        $route = \defined('JTL\Router\Route::SHIPPING_METHODS')
+            ? \JTL\Router\Route::SHIPPING_METHODS
+            : "shippingmethods";
+
+        return \rtrim(Shop::getAdminURL(), "/") . "/" . $route;
     }
 
     private function getTemplatePath(): string
