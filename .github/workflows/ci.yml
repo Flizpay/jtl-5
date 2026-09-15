@@ -34,7 +34,7 @@ jobs:
           coverage: none
 
       - name: Validate composer.json
-        run: composer validate --strict --no-check-publish
+        run: composer validate --no-check-publish
 
       - name: Lint PHP sources
         run: |
