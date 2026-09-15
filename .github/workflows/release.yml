@@ -1,0 +1,93 @@
+name: Release plugin
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to (re)build a Release for (e.g. v1.0.0). Only used with workflow_dispatch."
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag="${{ inputs.tag }}"
+          else
+            tag="${GITHUB_REF#refs/tags/}"
+          fi
+          case "${tag}" in
+            v*) ;;
+            *) echo "Tag ${tag} does not start with 'v'." >&2; exit 1 ;;
+          esac
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "version=${tag#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+          tools: none
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gettext zip unzip
+
+      - name: Verify tag matches info.xml <Version>
+        run: |
+          info_version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' info.xml | head -1)"
+          if [ -z "${info_version}" ]; then
+            echo "Could not read <Version> from info.xml" >&2
+            exit 1
+          fi
+          if [ "${info_version}" != "${{ steps.tag.outputs.version }}" ]; then
+            echo "Tag version ${{ steps.tag.outputs.version }} does not match info.xml <Version> ${info_version}." >&2
+            echo "Bump info.xml <Version> or retag." >&2
+            exit 1
+          fi
+
+      - name: Build plugin ZIP
+        run: ./build.sh
+
+      - name: Verify ZIP exists
+        id: artifact
+        run: |
+          zip_path="dist/flizpay-${{ steps.tag.outputs.version }}.zip"
+          if [ ! -f "${zip_path}" ]; then
+            echo "Expected ${zip_path} but it was not produced." >&2
+            exit 1
+          fi
+          echo "zip_path=${zip_path}" >> "${GITHUB_OUTPUT}"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.tag.outputs.tag }}"
+          zip_path="${{ steps.artifact.outputs.zip_path }}"
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            gh release upload "${tag}" "${zip_path}" --clobber
+          else
+            gh release create "${tag}" "${zip_path}" \
+              --title "FLIZpay JTL plugin ${{ steps.tag.outputs.version }}" \
+              --notes "Installable FLIZpay JTL-Shop plugin built from tag ${tag}. Attach this asset in JTL Admin > Plugins > Upload."
+          fi
