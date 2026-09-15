@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  package:
+    # Secret-free checks that run for every PR, including forks.
+    name: Package checks (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.1", "8.2", "8.3", "8.4"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish
+
+      - name: Lint PHP sources
+        run: |
+          find Bootstrap.php Migrations adminmenu frontend src paymentmethod tests \
+            -name '*.php' -print0 \
+            | xargs -0 -n1 -P4 php -l > /dev/null
+
+  unit:
+    name: Unit tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.3"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, json
+          tools: composer:v2
+          coverage: none
+
+      - name: Run plugin tests
+        run: composer test
+
+  build:
+    name: Build package (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.3"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, json
+          tools: composer:v2
+          coverage: none
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gettext zip unzip
+
+      - name: Build plugin ZIP
+        run: ./build.sh
+
+      - name: Verify ZIP exists
+        run: |
+          version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' info.xml | head -1)"
+          zip_path="dist/flizpay-${version}.zip"
+          if [ ! -f "${zip_path}" ]; then
+            echo "Expected ${zip_path} but it was not produced." >&2
+            exit 1
+          fi
+          echo "zip_path=${zip_path}" >> "${GITHUB_ENV}"
+
+      - name: Upload plugin package
+        uses: actions/upload-artifact@v4
+        with:
+          name: flizpay-jtl-plugin
+          path: dist/flizpay-*.zip
+          if-no-files-found: error
