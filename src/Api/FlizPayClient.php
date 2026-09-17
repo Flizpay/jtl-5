@@ -16,7 +16,7 @@ use Plugin\flizpay\src\Service\Logger;
  */
 class FlizPayClient
 {
-    public const BASE_URL = "https://olegs-macbook-pro-1.tail9450f2.ts.net:4440";
+    public const BASE_URL = "https://api.flizpay.de";
 
     private const CONNECT_TIMEOUT = 5;
 
