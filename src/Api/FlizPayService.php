@@ -182,19 +182,24 @@ class FlizPayService
     }
 
     /**
+     * Normalises a raw cashback entry from the FLIZpay backend
+     *
      * @param array<string, mixed> $cashback
      * @return array{first_purchase_amount: float, standard_amount: float}|null
      */
-    private static function normalizeCashbackEntry(array $cashback): ?array
+    public static function normalizeCashbackEntry(array $cashback): ?array
     {
-        $first = $cashback["firstPurchaseAmount"] ?? null;
-        $standard = $cashback["amount"] ?? null;
-        if (!\is_numeric($first) || !\is_numeric($standard)) {
+        $rawFirst = $cashback["firstPurchaseAmount"] ?? null;
+        $rawStandard = $cashback["amount"] ?? null;
+
+        $firstOk = \is_numeric($rawFirst);
+        $standardOk = \is_numeric($rawStandard);
+        if (!$firstOk && !$standardOk) {
             return null;
         }
 
-        $first = (float) $first;
-        $standard = (float) $standard;
+        $first = $firstOk ? (float) $rawFirst : 0.0;
+        $standard = $standardOk ? (float) $rawStandard : 0.0;
         if (
             !\is_finite($first) ||
             !\is_finite($standard) ||

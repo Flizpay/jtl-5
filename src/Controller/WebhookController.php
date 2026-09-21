@@ -6,6 +6,7 @@ namespace Plugin\flizpay\src\Controller;
 
 use JTL\Smarty\JTLSmarty;
 use Laminas\Diactoros\Response\JsonResponse;
+use Plugin\flizpay\src\Api\FlizPayService;
 use Plugin\flizpay\src\FlizPlugin;
 use Plugin\flizpay\src\Service\CashbackService;
 use Plugin\flizpay\src\Service\ConfigService;
@@ -92,11 +93,8 @@ class WebhookController
 
         // live cashback update pushed from the FLIZ merchant app
         if ($type === "cashback") {
-            if (
-                !isset($decoded["firstPurchaseAmount"], $decoded["amount"]) ||
-                !\is_numeric($decoded["firstPurchaseAmount"]) ||
-                !\is_numeric($decoded["amount"])
-            ) {
+            $normalized = FlizPayService::normalizeCashbackEntry($decoded);
+            if ($normalized === null) {
                 FlizPlugin::debug("webhook: cashback update rejected", [
                     "http" => 400,
                 ]);
@@ -104,16 +102,10 @@ class WebhookController
                 return self::error("Missing cashback information", 400);
             }
 
-            $cashbackService = new CashbackService(null, $config);
-            $cashbackService->update([
-                "first_purchase_amount" =>
-                    (float) $decoded["firstPurchaseAmount"],
-                "standard_amount" => (float) $decoded["amount"],
-            ]);
+            (new CashbackService(null, $config))->update($normalized);
             FlizPlugin::debug("webhook: cashback updated", [
-                "firstPurchaseAmount" =>
-                    (float) $decoded["firstPurchaseAmount"],
-                "amount" => (float) $decoded["amount"],
+                "firstPurchaseAmount" => $normalized["first_purchase_amount"],
+                "amount" => $normalized["standard_amount"],
             ]);
 
             return self::success("Cashback information updated");
