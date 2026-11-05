@@ -3,17 +3,6 @@
 declare(strict_types=1);
 
 use Plugin\flizpay\src\Service\CashbackService;
-use Plugin\flizpay\src\Service\ConfigService;
-
-class CashbackConfigStub extends ConfigService
-{
-    public function __construct(private ?array $cashback) {}
-
-    public function getCashback(): ?array
-    {
-        return $this->cashback;
-    }
-}
 
 class CashbackServiceTest extends TestCase
 {
@@ -28,63 +17,19 @@ class CashbackServiceTest extends TestCase
         $this->assertSame("5,25", $service->formatPercent(5.25, true));
     }
 
-    public function testUsesPlainTitleWithoutDiscount(): void
+    public function testSyncWritesPlainNameAndNoDescription(): void
     {
-        $service = $this->service(null);
-
-        $this->assertSame("FLIZpay", $service->previewTitle(false));
-        $this->assertSame("FLIZpay", $service->previewTitle(true));
-    }
-
-    public function testBuildsFirstPaymentTitleLikeMagento(): void
-    {
-        $service = $this->service([
-            "first_purchase_amount" => 5.0,
-            "standard_amount" => 0.0,
-        ]);
-
-        $this->assertSame(
-            "FLIZpay - Save 5% on your first payment",
-            $service->previewTitle(false),
+        // The offer text belongs to <fliz-checkout>; nothing cashback-derived
+        // may be written into tzahlungsartsprache anymore.
+        $source = \file_get_contents(
+            __DIR__ . "/../src/Service/CashbackService.php",
         );
-        $this->assertSame(
-            "FLIZpay – Spare 5% bei deiner ersten Zahlung",
-            $service->previewTitle(true),
-        );
-    }
 
-    public function testBuildsBothRatesTitleLikeMagento(): void
-    {
-        $service = $this->service([
-            "first_purchase_amount" => 5.0,
-            "standard_amount" => 2.5,
-        ]);
-
-        $this->assertSame(
-            "FLIZpay - Save up to 5%",
-            $service->previewTitle(false),
-        );
-        $this->assertSame(
-            "FLIZpay – Spare bis zu 5%",
-            $service->previewTitle(true),
-        );
-    }
-
-    public function testBuildsStandardTitleLikeMagento(): void
-    {
-        $service = $this->service([
-            "first_purchase_amount" => 0.0,
-            "standard_amount" => 2.5,
-        ]);
-
-        $this->assertSame(
-            "FLIZpay - Up to 2.5% discount",
-            $service->previewTitle(false),
-        );
-        $this->assertSame(
-            "FLIZpay – Bis zu 2,5% Rabatt",
-            $service->previewTitle(true),
-        );
+        $this->assertSame('FLIZpay', CashbackService::TITLE_PLAIN);
+        $this->assertTrue(\str_contains($source, "cHinweisTextShop = :descr"));
+        $this->assertTrue(\str_contains($source, '"descr" => "",'));
+        $this->assertFalse(\str_contains($source, "previewTitle"));
+        $this->assertFalse(\str_contains($source, "Spare"));
     }
 
     public function testPaymentTemplateRendersPaymentTitle(): void
@@ -109,24 +54,22 @@ class CashbackServiceTest extends TestCase
         );
         $this->assertTrue(\str_contains($service, "flizpay-payment-copy"));
         $this->assertTrue(\str_contains($service, "append(\$note)"));
-        // Match either quote style so a formatter pass over the source
-        // (single- vs double-quoted 'img') does not flip this assertion.
-        $this->assertTrue(
-            (bool) \preg_match(
-                '/->children\(["\']img["\']\)->length === 0/',
-                $service,
-            ),
-        );
     }
 
-    private function service(?array $cashback): CashbackService
+    public function testCheckoutPresentationRendersBothSurfaces(): void
     {
-        $reflection = new ReflectionClass(CashbackService::class);
-        /** @var CashbackService $service */
-        $service = $reflection->newInstanceWithoutConstructor();
-        $config = $reflection->getProperty("config");
-        $config->setValue($service, new CashbackConfigStub($cashback));
+        $service = \file_get_contents(
+            __DIR__ . "/../src/Service/CheckoutPresentationService.php",
+        );
 
-        return $service;
+        $this->assertTrue(\str_contains($service, 'elementHtml("title"'));
+        $this->assertTrue(\str_contains($service, 'elementHtml("description")'));
+        // Hidden, never remounted: a remount makes the element refetch.
+        $this->assertTrue(\str_contains($service, '" hidden"'));
+        // NOVA prints the name in span.content when no logo is shown.
+        $this->assertTrue(\str_contains($service, 'children(".content")->remove()'));
+        // Storefront rendering must never wait on FLIZpay.
+        $this->assertTrue(\str_contains($service, "->resolve()"));
+        $this->assertFalse(\str_contains($service, "->ensure("));
     }
 }

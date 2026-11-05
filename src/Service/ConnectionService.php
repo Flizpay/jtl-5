@@ -13,7 +13,8 @@ use Plugin\flizpay\src\FlizPlugin;
  *
  *   1. register the shop's webhook URL at FLIZpay (echo-verified)
  *   2. fetch the HMAC webhook key
- *   3. fetch the cashback configuration
+ *   3. fetch the shop's public id (for the hosted <fliz-checkout> component)
+ *   4. fetch the cashback configuration
  *
  * Any failure wipes the API key so misconfiguration is immediately visible.
  * FLIZpay then POSTs a {"test": ...} webhook out-of-band; receiving it flips
@@ -28,12 +29,16 @@ class ConnectionService
 
     private CashbackService $cashback;
 
+    private PublicIdService $publicId;
+
     public function __construct(
         ?ConfigService $config = null,
         ?CashbackService $cashback = null,
+        ?PublicIdService $publicId = null,
     ) {
         $this->config = $config ?? new ConfigService();
         $this->cashback = $cashback ?? new CashbackService(null, $this->config);
+        $this->publicId = $publicId ?? new PublicIdService($this->config);
     }
 
     public static function getWebhookUrl(): string
@@ -58,6 +63,7 @@ class ConnectionService
             FlizPlugin::debug("settings saved: no API key, handshake skipped");
             $this->config->setWebhookAlive(false);
             $this->config->set(ConfigService::KEY_API_KEY_HASH, "");
+            $this->config->clearPublicId();
 
             return [
                 "success" => false,
@@ -77,6 +83,8 @@ class ConnectionService
             $urlUnchanged &&
             $this->config->get(ConfigService::KEY_API_KEY_HASH) === $keyHash
         ) {
+            // Recovers from an earlier failed public id fetch.
+            $this->publicId->ensure();
             if ($this->config->isConnected()) {
                 FlizPlugin::debug(
                     "settings saved: unchanged and connected, handshake skipped",
@@ -120,6 +128,9 @@ class ConnectionService
     public function runHandshake(string $apiKey, ?string $keyHash = null): array
     {
         $this->config->setWebhookAlive(false);
+        // The id belongs to the credentials being replaced, so it is dropped
+        // here and refetched; a reconnect can never inherit a stale one.
+        $this->config->clearPublicId();
         $api = new FlizPayService($apiKey);
         $webhookUrl = self::getWebhookUrl();
         FlizPlugin::debug("handshake started", ["url" => $webhookUrl]);
@@ -151,6 +162,10 @@ class ConnectionService
             ConfigService::KEY_HANDSHAKE_AT,
             \date("Y-m-d H:i:s"),
         );
+
+        // The public id is optional for the handshake: without it the checkout
+        // keeps the plain label, and the settings tab retries later.
+        $this->publicId->ensure();
 
         // Cashback is optional — a missing configuration must not fail the handshake.
         $this->cashback->update($api->fetchCashback());

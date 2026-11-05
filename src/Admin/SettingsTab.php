@@ -11,9 +11,11 @@ use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\flizpay\src\FlizPlugin;
 use Plugin\flizpay\src\Service\CashbackService;
+use Plugin\flizpay\src\Service\CheckoutWidget;
 use Plugin\flizpay\src\Service\ConfigService;
 use Plugin\flizpay\src\Service\ConnectionService;
 use Plugin\flizpay\src\Service\Logger;
+use Plugin\flizpay\src\Service\PublicIdService;
 
 /**
  * The "Settings" tab owns the whole settings lifecycle: it saves the merchant
@@ -27,9 +29,13 @@ class SettingsTab
 {
     private const HANDSHAKE_WAIT_SECONDS = 90;
 
+    /** Sample basket the checkout preview asks the component to price, in cents. */
+    private const SAMPLE_AMOUNT = 10000;
+
     /** ValueName => default of every merchant setting owned by this form. */
     private const SETTINGS = [
         "flizpay_apiKey" => "",
+        "flizpay_displayHeadline" => "Y",
         "flizpay_displayLogo" => "Y",
         "flizpay_displayDescription" => "Y",
         "flizpay_debugMode" => "N",
@@ -54,6 +60,22 @@ class SettingsTab
         $standardDiscount = (float) ($cashback["standard_amount"] ?? 0);
 
         $apiKey = $this->config->getApiKey();
+        // Recovers from an earlier failed fetch; throttled so a FLIZpay outage
+        // does not slow down every visit to this tab.
+        $publicId =
+            $apiKey !== ""
+                ? (new PublicIdService($this->config))->ensure(true)
+                : "";
+        $previewLocale = $germanAdmin ? "de-DE" : "en-GB";
+        $widget = CheckoutWidget::fromConfig(
+            $this->config,
+            $publicId,
+            $previewLocale,
+            self::SAMPLE_AMOUNT,
+        );
+        $previewTitleHtml = $widget->isRenderable()
+            ? $widget->elementHtml("title", CheckoutWidget::FALLBACK_TITLE)
+            : "";
         $handshakeAt = $this->config->get(ConfigService::KEY_HANDSHAKE_AT);
         $awaitingTest =
             !$this->config->isWebhookAlive() &&
@@ -72,6 +94,7 @@ class SettingsTab
                 \strlen($this->config->getWebhookKey()) >= 32,
             )
             ->assign("flizWebhookAlive", $this->config->isWebhookAlive())
+            ->assign("flizDisplayHeadline", $this->config->displayHeadline())
             ->assign("flizDisplayLogo", $this->config->displayLogo())
             ->assign(
                 "flizDisplayDescription",
@@ -83,14 +106,33 @@ class SettingsTab
             ->assign("flizShippingMethodsUrl", $this->getShippingMethodsUrl())
             ->assign("flizLogoUrl", $this->getLogoUrl())
             ->assign("flizAdminCssUrl", $this->getAdminCssUrl())
-             ->assign(
-                 "flizPreviewTitleSuffix",
-                 $cashbackService->previewTitleSuffix($germanAdmin),
-             )
-             ->assign(
-                 "flizPreviewSubtitle",
-                 $cashbackService->previewDescription($germanAdmin),
-             )
+            ->assign("flizHasPublicId", $widget->isRenderable())
+            ->assign("flizPreviewTitleHtml", $previewTitleHtml)
+            ->assign(
+                "flizPreviewDescriptionHtml",
+                $widget->elementHtml("description"),
+            )
+            ->assign("flizWidgetScriptHtml", CheckoutWidget::scriptTagHtml())
+            ->assign(
+                "flizPreviewTitleJson",
+                (string) \json_encode(
+                    $previewTitleHtml,
+                    \JSON_HEX_TAG |
+                        \JSON_HEX_AMP |
+                        \JSON_HEX_APOS |
+                        \JSON_HEX_QUOT,
+                ),
+            )
+            ->assign(
+                "flizPreviewHint",
+                \sprintf(
+                    \d__(
+                        "flizpay",
+                        "The preview prices a sample basket of %s. The offer text comes straight from FLIZpay, so customers always see the current offer.",
+                    ),
+                    self::formatSampleAmount($previewLocale),
+                ),
+            )
              ->assign(
                  "flizFirstPurchaseDiscount",
                  $firstPurchaseDiscount > 0
@@ -252,6 +294,30 @@ class SettingsTab
             $suffix;
     }
 
+    /**
+     * The preview's sample basket in the admin locale, formatted from the same
+     * constant the preview element receives so the hint can never name a
+     * different basket than the one being priced.
+     */
+    private static function formatSampleAmount(string $locale): string
+    {
+        $amount = self::SAMPLE_AMOUNT / 100;
+        if (\class_exists(\NumberFormatter::class)) {
+            $formatter = new \NumberFormatter(
+                \str_replace("-", "_", $locale),
+                \NumberFormatter::CURRENCY,
+            );
+            $formatted = $formatter->formatCurrency($amount, "EUR");
+            if (\is_string($formatted) && $formatted !== "") {
+                return $formatted;
+            }
+        }
+
+        return \str_starts_with($locale, "de")
+            ? \number_format($amount, 2, ",", ".") . " €"
+            : "€" . \number_format($amount, 2, ".", ",");
+    }
+
     private function flushPluginCache(): void
     {
         try {
@@ -266,8 +332,7 @@ class SettingsTab
     }
 
     /**
-     * The preview mirrors what CashbackService writes for the shop languages;
-     * the variant shown in the admin follows the backend user's language.
+     * The preview renders in the backend user's language.
      */
     private function isGermanAdmin(): bool
     {

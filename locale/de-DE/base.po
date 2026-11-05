@@ -61,9 +61,6 @@ msgstr "FLIZpay-Logo im Checkout anzeigen"
 msgid "Show description in subtitle when FLIZpay is selected"
 msgstr "Beschreibung im Untertitel anzeigen, wenn FLIZpay ausgewählt ist"
 
-msgid "The discount value is retrieved from your FLIZ company account and kept up to date automatically."
-msgstr "Der Rabattwert wird automatisch aus deinem FLIZ-Firmenkonto übernommen und aktuell gehalten."
-
 msgid "FLIZpay is not offered at checkout until the connection is complete."
 msgstr "Solange die Verbindung nicht vollständig ist, wird FLIZpay im Checkout nicht angeboten."
 
@@ -225,3 +222,18 @@ msgstr "Du möchtest mehr Details? Lies unsere"
 
 msgid "documentation"
 msgstr "Dokumentation"
+
+msgid "Headline"
+msgstr "Überschrift"
+
+msgid "Show the FLIZpay offer instead of the payment method name"
+msgstr "FLIZpay-Angebot anstelle des Zahlungsartnamens anzeigen"
+
+msgid "Save your FLIZpay API key to load the checkout preview."
+msgstr "Speichere deinen FLIZpay API-Key, um die Checkout-Vorschau zu laden."
+
+msgid "The preview prices a sample basket of %s. The offer text comes straight from FLIZpay, so customers always see the current offer."
+msgstr "Die Vorschau berechnet einen Beispielwarenkorb von %s. Der Angebotstext kommt direkt von FLIZpay, daher sehen Kunden immer das aktuelle Angebot."
+
+msgid "The checkout text is provided by FLIZpay and always reflects the discounts configured in your FLIZ company account."
+msgstr "Der Checkout-Text wird von FLIZpay bereitgestellt und entspricht immer den in deinem FLIZ-Firmenkonto konfigurierten Rabatten."

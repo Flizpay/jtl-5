@@ -111,13 +111,7 @@ class FlizPay extends Method
     public function preparePaymentProcess(Bestellung $order): void
     {
         $smarty = Shop::Smarty();
-        $smarty->assign(
-            "flizPaymentTitle",
-            (new CashbackService(null, $this->config))->previewTitle(
-                \strtolower((string) ($_SESSION["cISOSprache"] ?? "")) ===
-                    "ger",
-            ),
-        );
+        $smarty->assign("flizPaymentTitle", CashbackService::TITLE_PLAIN);
         $kBestellung = (int) $order->kBestellung;
         if ($kBestellung <= 0) {
             FlizPlugin::log(

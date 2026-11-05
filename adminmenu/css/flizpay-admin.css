@@ -89,6 +89,24 @@
     content: "\2191\00a0";
 }
 
+.fliz-checkout-preview__hint {
+    max-width: 500px;
+    margin: 12px auto 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #666;
+    text-align: center;
+}
+
+.fliz-checkout-preview__hint--warning {
+    max-width: 500px;
+    margin: 0 auto 12px;
+}
+
+.fliz-checkout-preview__subtitle fliz-checkout {
+    display: block;
+}
+
 .fliz-checkout-settings {
     border-top: 1px solid #dee2e6;
     padding-top: 8px;

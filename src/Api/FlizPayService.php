@@ -108,6 +108,7 @@ class FlizPayService
     {
         $res = $this->client->request("POST", "/business/edit", [
             "webhookUrl" => $webhookUrl,
+            "integrationType" => "JTL",
         ]);
         if ($res["status"] === 0) {
             return ["ok" => false, "transport" => true];
@@ -128,6 +129,46 @@ class FlizPayService
         }
 
         return ["ok" => $ok, "transport" => false];
+    }
+
+    /**
+     * Fetches the shop's public id, the only FLIZpay identifier the hosted
+     * <fliz-checkout> component needs in the browser.
+     *
+     * Null when FLIZpay has no id for these credentials or the response is
+     * unusable, so callers can back off instead of storing an empty value.
+     */
+    public function fetchPublicId(): ?string
+    {
+        $res = $this->client->request("GET", "/business/public-id");
+        $publicId = self::parsePublicId($res);
+        if ($publicId === null) {
+            FlizPlugin::debug("fetchPublicId: no usable public id", [
+                "http" => $res["status"],
+                "error" => $res["error"],
+            ]);
+        }
+
+        return $publicId;
+    }
+
+    /**
+     * @param array{status:int, data:?array, error:?string, jsonError:bool} $res
+     */
+    public static function parsePublicId(array $res): ?string
+    {
+        if (
+            $res["status"] < 200 ||
+            $res["status"] >= 300 ||
+            !\is_array($res["data"])
+        ) {
+            return null;
+        }
+        $publicId = $res["data"]["publicId"] ?? null;
+
+        return \is_string($publicId) && \trim($publicId) !== ""
+            ? \trim($publicId)
+            : null;
     }
 
     /**

@@ -52,4 +52,17 @@ class LocalizationTest extends TestCase
             ));
         }
     }
+
+    public function testCatalogsContainCheckoutWidgetTranslations(): void
+    {
+        foreach (['de-DE', 'en-GB', 'en-US'] as $locale) {
+            $catalog = (string)\file_get_contents(__DIR__ . '/../locale/' . $locale . '/base.po');
+
+            $this->assertTrue(\str_contains($catalog, 'msgid "Headline"'));
+            $this->assertTrue(\str_contains($catalog, 'msgid "Show the FLIZpay offer instead of the payment method name"'));
+            $this->assertTrue(\str_contains($catalog, 'msgid "Save your FLIZpay API key to load the checkout preview."'));
+            $this->assertTrue(\str_contains($catalog, 'msgid "The preview prices a sample basket of %s.'));
+            $this->assertFalse(\str_contains($catalog, 'msgid "The discount value is retrieved'));
+        }
+    }
 }

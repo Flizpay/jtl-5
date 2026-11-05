@@ -201,4 +201,21 @@ class FlizPayServiceTest extends TestCase
             ]),
         );
     }
+
+    public function testParsesPublicId(): void
+    {
+        $ok = ['status' => 200, 'data' => ['publicId' => ' pub_1 '], 'error' => null, 'jsonError' => false];
+        $this->assertSame('pub_1', FlizPayService::parsePublicId($ok));
+    }
+
+    public function testRejectsUnusablePublicIdResponses(): void
+    {
+        $base = ['status' => 200, 'data' => null, 'error' => null, 'jsonError' => false];
+        $this->assertSame(null, FlizPayService::parsePublicId(['data' => ['publicId' => '  ']] + $base));
+        $this->assertSame(null, FlizPayService::parsePublicId(['data' => ['publicId' => 42]] + $base));
+        $this->assertSame(null, FlizPayService::parsePublicId(['data' => []] + $base));
+        $this->assertSame(null, FlizPayService::parsePublicId($base));
+        $this->assertSame(null, FlizPayService::parsePublicId(['status' => 404, 'data' => ['publicId' => 'pub_1']] + $base));
+        $this->assertSame(null, FlizPayService::parsePublicId(['status' => 0] + $base));
+    }
 }

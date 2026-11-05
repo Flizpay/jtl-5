@@ -106,14 +106,17 @@
     <div class="card mb-4">
         <div class="card-header">{d__('flizpay', 'Checkout Settings')}</div>
         <div class="card-body">
-            <div class="fliz-checkout-preview">
+            <div class="fliz-checkout-preview" id="flizCheckoutPreview">
+                {if !$flizHasPublicId}
+                    <div class="alert alert-warning fliz-checkout-preview__hint--warning">
+                        {d__('flizpay', 'Save your FLIZpay API key to load the checkout preview.')}
+                    </div>
+                {/if}
                 <div class="fliz-checkout-preview__box">
                     <div class="fliz-checkout-preview__row">
                         <div class="fliz-checkout-preview__radio"></div>
-                        <span class="fliz-checkout-preview__name">FLIZpay</span>
-                        {if $flizPreviewTitleSuffix !== ''}
-                            <span class="fliz-checkout-preview__title">{$flizPreviewTitleSuffix|escape:'html'}</span>
-                        {/if}
+                        {* The plain name shows until the hosted script upgrades the element. *}
+                        <span class="fliz-checkout-preview__name" id="flizPreviewTitle">{if $flizHasPublicId && $flizDisplayHeadline}{$flizPreviewTitleHtml nofilter}{else}FLIZpay{/if}</span>
                         {if $flizLogoUrl !== ''}
                             <span class="fliz-checkout-preview__logo"
                                   id="flizPreviewLogo"
@@ -122,13 +125,16 @@
                             </span>
                         {/if}
                     </div>
-                    <div class="fliz-checkout-preview__subtitle"
-                         id="flizPreviewSubtitle"
-                         {if !$flizDisplayDescription}hidden{/if}>
-                        {$flizPreviewSubtitle|escape:'html'}
-                    </div>
+                    {if $flizHasPublicId}
+                        <div class="fliz-checkout-preview__subtitle"
+                             id="flizPreviewSubtitle"
+                             {if !$flizDisplayDescription}hidden{/if}>{$flizPreviewDescriptionHtml nofilter}</div>
+                    {/if}
                 </div>
                 <div class="fliz-checkout-preview__labels">
+                    <span class="fliz-checkout-preview__label"
+                          id="flizLabelHeadline"
+                          {if !$flizDisplayHeadline}hidden{/if}>{d__('flizpay', 'Headline')}</span>
                     <span class="fliz-checkout-preview__label"
                           id="flizLabelLogo"
                           {if !$flizDisplayLogo}hidden{/if}>{d__('flizpay', 'Logo')}</span>
@@ -136,9 +142,30 @@
                           id="flizLabelSubtitle"
                           {if !$flizDisplayDescription}hidden{/if}>{d__('flizpay', 'Subtitle')}</span>
                 </div>
+                {if $flizHasPublicId}
+                    <p class="fliz-checkout-preview__hint">
+                        {$flizPreviewHint|escape:'html'}
+                    </p>
+                    {$flizWidgetScriptHtml nofilter}
+                {/if}
             </div>
 
             <div class="fliz-checkout-settings">
+                <div class="fliz-checkout-settings__option">
+                    <span class="fliz-checkout-settings__name">{d__('flizpay', 'Headline')}</span>
+                    <input type="hidden" name="flizpay_displayHeadline" value="N">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox"
+                               class="custom-control-input"
+                               id="flizDisplayHeadlineInput"
+                               name="flizpay_displayHeadline"
+                               value="Y"
+                               {if $flizDisplayHeadline}checked{/if}>
+                        <label class="custom-control-label" for="flizDisplayHeadlineInput">
+                            {d__('flizpay', 'Show the FLIZpay offer instead of the payment method name')}
+                        </label>
+                    </div>
+                </div>
                 <div class="fliz-checkout-settings__option">
                     <span class="fliz-checkout-settings__name">{d__('flizpay', 'Logo')}</span>
                     <input type="hidden" name="flizpay_displayLogo" value="N">
@@ -171,7 +198,7 @@
                 </div>
             </div>
             <small class="form-text text-muted mt-3 mb-0">
-                {d__('flizpay', 'The discount value is retrieved from your FLIZ company account and kept up to date automatically.')}
+                {d__('flizpay', 'The checkout text is provided by FLIZpay and always reflects the discounts configured in your FLIZ company account.')}
             </small>
         </div>
     </div>
@@ -267,6 +294,30 @@
 
     // Live checkout preview: each checkbox instantly shows/hides its preview
     // element and the matching pointer label; persisted only on Save.
+    (function () {
+        var headline = document.getElementById('flizDisplayHeadlineInput');
+        var title    = document.getElementById('flizPreviewTitle');
+        var label    = document.getElementById('flizLabelHeadline');
+        var titleHtml = {/literal}{$flizPreviewTitleJson nofilter}{literal};
+        if (headline && title) {
+            headline.addEventListener('change', function () {
+                if (label) {
+                    label.hidden = !headline.checked;
+                }
+                if (titleHtml === '') {
+                    return;
+                }
+                // Only the headline node is replaced, so the description
+                // element stays mounted and never refetches its offer text.
+                if (headline.checked) {
+                    title.innerHTML = titleHtml;
+                } else {
+                    title.textContent = 'FLIZpay';
+                }
+            });
+        }
+    })();
+
     (function () {
         [
             ['flizDisplayLogoInput', ['flizPreviewLogo', 'flizLabelLogo']],
