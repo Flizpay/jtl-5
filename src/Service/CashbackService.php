@@ -8,17 +8,17 @@ use JTL\DB\DbInterface;
 use Plugin\flizpay\src\FlizPlugin;
 
 /**
- * Keeps the checkout presentation of the payment method in sync with the
- * cashback data from the FLIZpay backend and the merchant's display settings.
+ * Stores the cashback data from the FLIZpay backend and keeps the stored
+ * payment method presentation (plain name, no description, logo) in sync with
+ * the merchant's display settings.
  *
- * The checkout label/description come from tzahlungsartsprache (per language),
- * so this service rewrites those rows whenever cashback or display settings
- * change (settings save, handshake, updateCashbackInfo webhook). Manual
- * renames of the method are therefore overwritten by design.
+ * The offer text itself comes from the hosted <fliz-checkout> component (see
+ * CheckoutPresentationService). Manual renames of the method are overwritten
+ * by design.
  */
 class CashbackService
 {
-    private const TITLE_PLAIN = "FLIZpay";
+    public const TITLE_PLAIN = "FLIZpay";
 
     private DbInterface $db;
 
@@ -42,8 +42,12 @@ class CashbackService
     }
 
     /**
-     * Rewrites method name, description and logo according to the stored
-     * cashback data and the display settings.
+     * Resets the method name to the plain "FLIZpay" and clears the shop
+     * description in every language, and applies the logo setting.
+     *
+     * The offer text is rendered by the hosted <fliz-checkout> component, so
+     * nothing cashback-derived is written into tzahlungsartsprache anymore.
+     * Keeping the name exactly "FLIZpay" also lets JTL-Wawi match the method.
      */
     public function syncPresentation(): void
     {
@@ -53,125 +57,16 @@ class CashbackService
         }
         $this->syncLogo($kZahlungsart);
 
-        $rows = $this->db->getObjects(
-            "SELECT cISOSprache FROM tzahlungsartsprache WHERE kZahlungsart = :pm",
-            ["pm" => $kZahlungsart],
+        $this->db->queryPrepared(
+            'UPDATE tzahlungsartsprache
+                SET cName = :name, cHinweisTextShop = :descr
+                WHERE kZahlungsart = :pm',
+            [
+                "name" => self::TITLE_PLAIN,
+                "descr" => "",
+                "pm" => $kZahlungsart,
+            ],
         );
-        foreach ($rows as $row) {
-            $german = \strtolower((string) $row->cISOSprache) === "ger";
-            $this->db->queryPrepared(
-                'UPDATE tzahlungsartsprache
-                    SET cName = :name, cHinweisTextShop = :descr
-                    WHERE kZahlungsart = :pm AND cISOSprache = :iso',
-                [
-                    "name" => $this->previewTitle($german),
-                    "descr" => $this->config->displayDescription()
-                        ? $this->previewDescription($german)
-                        : "",
-                    "pm" => $kZahlungsart,
-                    "iso" => $row->cISOSprache,
-                ],
-            );
-        }
-    }
-
-    public function previewTitle(bool $german): string
-    {
-        return self::TITLE_PLAIN . $this->previewTitleSuffix($german);
-    }
-
-    /**
-     * Cashback suffix appended to the method title. Empty when no cashback is
-     * configured. Also used by the admin preview.
-     */
-    public function previewTitleSuffix(bool $german): string
-    {
-        $cashback = $this->config->getCashback();
-        $first = (float) ($cashback["first_purchase_amount"] ?? 0);
-        $standard = (float) ($cashback["standard_amount"] ?? 0);
-        if ($first <= 0 && $standard <= 0) {
-            return "";
-        }
-
-        if ($first > 0 && $standard <= 0) {
-            $pct = $this->formatPercent($first, $german);
-
-            return $german
-                ? \sprintf(" – Spare %s%% bei deiner ersten Zahlung", $pct)
-                : \sprintf(" - Save %s%% on your first payment", $pct);
-        }
-
-        $pct = $this->formatPercent(\max($first, $standard), $german);
-        if ($first > 0 && $standard > 0) {
-            return $german
-                ? \sprintf(" – Spare bis zu %s%%", $pct)
-                : \sprintf(" - Save up to %s%%", $pct);
-        }
-
-        return $german
-            ? \sprintf(" – Bis zu %s%% Rabatt", $pct)
-            : \sprintf(" - Up to %s%% discount", $pct);
-    }
-
-    /**
-     * Description text for the current cashback data, regardless of the
-     * display settings. Also used by the admin preview.
-     */
-    public function previewDescription(bool $german): string
-    {
-        $cashback = $this->config->getCashback();
-
-        return $this->buildDescription(
-            (float) ($cashback["first_purchase_amount"] ?? 0),
-            (float) ($cashback["standard_amount"] ?? 0),
-            $german,
-        );
-    }
-
-    private function buildDescription(
-        float $first,
-        float $standard,
-        bool $german,
-    ): string {
-        if ($first > 0 && $standard > 0) {
-            return $german
-                ? \sprintf(
-                    "Sichere dir %s%% Rabatt auf deine erste und %s%% auf jede weitere Zahlung mit FLIZpay.",
-                    $this->formatPercent($first, true),
-                    $this->formatPercent($standard, true),
-                )
-                : \sprintf(
-                    "Get %s%% off your first payment and %s%% off every payment after that with FLIZpay.",
-                    $this->formatPercent($first, false),
-                    $this->formatPercent($standard, false),
-                );
-        }
-        if ($first > 0) {
-            return $german
-                ? \sprintf(
-                    "Sichere dir %s%% Rabatt auf deine erste Zahlung mit FLIZpay.",
-                    $this->formatPercent($first, true),
-                )
-                : \sprintf(
-                    "Get %s%% off your first payment with FLIZpay.",
-                    $this->formatPercent($first, false),
-                );
-        }
-        if ($standard > 0) {
-            return $german
-                ? \sprintf(
-                    "Sichere dir %s%% Rabatt mit FLIZpay.",
-                    $this->formatPercent($standard, true),
-                )
-                : \sprintf(
-                    "Get %s%% off with FLIZpay.",
-                    $this->formatPercent($standard, false),
-                );
-        }
-
-        return $german
-            ? "Sichere Zahlungen in direkter Zusammenarbeit mit deiner Bank."
-            : "Secure payments in direct collaboration with your bank.";
     }
 
     /**

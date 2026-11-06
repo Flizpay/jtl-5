@@ -27,6 +27,8 @@ class ConfigService
     public const KEY_API_KEY_HASH = "api_key_hash";
     public const KEY_HANDSHAKE_AT = "handshake_at";
     public const KEY_METHOD_IMAGE = "method_image";
+    public const KEY_PUBLIC_ID = "public_id";
+    public const KEY_PUBLIC_ID_RETRY_AT = "public_id_retry_at";
 
     private DbInterface $db;
 
@@ -115,6 +117,25 @@ class ConfigService
         );
     }
 
+    /**
+     * The shop's public id for the hosted web components; empty when none is
+     * stored. Carries no credentials.
+     */
+    public function getPublicId(): string
+    {
+        return \trim((string) ($this->get(self::KEY_PUBLIC_ID) ?? ""));
+    }
+
+    /**
+     * Drops the stored public id and its retry throttle. Called whenever the
+     * credentials change, so a reconnect never inherits a stale id.
+     */
+    public function clearPublicId(): void
+    {
+        $this->delete(self::KEY_PUBLIC_ID);
+        $this->delete(self::KEY_PUBLIC_ID_RETRY_AT);
+    }
+
     // ------------------------------------------------------------------
     // Merchant settings (info.xml Settingslink, stored in tplugineinstellungen)
     // ------------------------------------------------------------------
@@ -134,6 +155,15 @@ class ConfigService
         return \trim(
             (string) ($this->getMerchantSetting("flizpay_apiKey") ?? ""),
         );
+    }
+
+    /**
+     * Whether the FLIZpay offer headline replaces the payment method name.
+     */
+    public function displayHeadline(): bool
+    {
+        return ($this->getMerchantSetting("flizpay_displayHeadline") ?? "Y") !==
+            "N";
     }
 
     public function displayLogo(): bool
@@ -180,6 +210,7 @@ class ConfigService
             ["pid" => $kPlugin],
         );
         $this->set(self::KEY_API_KEY_HASH, "");
+        $this->clearPublicId();
         try {
             Shop::Container()
                 ->getCache()

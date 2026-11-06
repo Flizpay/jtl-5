@@ -66,9 +66,19 @@ JTL-Wawi and invoices show no payment method.
 
 ## Discounts and cashback
 
-Discounts are configured exclusively in the FLIZ company account. The plugin retrieves
-the current values when the settings are saved and keeps them updated through webhooks.
-During checkout, it can display a title such as "FLIZpay - Up to X% discount".
+Discounts are configured exclusively in the FLIZ company account.
+
+The checkout headline and description are rendered by FLIZpay's hosted
+`<fliz-checkout>` web component, so the offer text always matches the current discount
+programs. The plugin only passes the shop's public ID (fetched when the settings are
+saved), the shop language and the cart total. Without a public ID, checkout shows the
+plain "FLIZpay" name. The payment method name stored in the shop stays exactly
+"FLIZpay", which keeps the JTL-Wawi name match intact.
+
+The bundle is loaded from `app.flizpay.de` and calls `api.flizpay.de` from the
+browser; shops with a Content Security Policy must allow both. To test a staging or
+local build of the bundle, define `FLIZPAY_WIDGET_SCRIPT_URL` in
+`includes/config.JTL-Shop.ini.php`.
 
 When FLIZpay grants a discount for a payment, the plugin adds a discount item to the
 order and corrects the order total after payment, before the order is transferred to

@@ -224,3 +224,38 @@ class FakeDiscountService extends DiscountService
         return $this->result;
     }
 }
+
+/**
+ * In-memory runtime store and merchant settings — no database in tests.
+ */
+class InMemoryConfigService extends \Plugin\flizpay\src\Service\ConfigService
+{
+    /** @var array<string, ?string> */
+    public array $store = [];
+
+    /** @param array<string, string> $settings merchant settings by ValueName */
+    public function __construct(public array $settings = [])
+    {
+        // deliberately no parent::__construct() — no database in tests
+    }
+
+    public function get(string $key): ?string
+    {
+        return $this->store[$key] ?? null;
+    }
+
+    public function set(string $key, ?string $value): void
+    {
+        $this->store[$key] = $value;
+    }
+
+    public function delete(string $key): void
+    {
+        unset($this->store[$key]);
+    }
+
+    public function getMerchantSetting(string $valueName): ?string
+    {
+        return $this->settings[$valueName] ?? null;
+    }
+}

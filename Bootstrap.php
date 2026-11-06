@@ -17,6 +17,7 @@ use Plugin\flizpay\src\FlizPlugin;
 use Plugin\flizpay\src\Service\CashbackService;
 use Plugin\flizpay\src\Service\CheckoutPresentationService;
 use Plugin\flizpay\src\Service\ConfigService;
+use Plugin\flizpay\src\Service\PublicIdService;
 use Plugin\flizpay\src\Admin\SettingsTab;
 
 class Bootstrap extends Bootstrapper implements BootstrapperInterface
@@ -109,9 +110,16 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
     {
         parent::updated($oldVersion, $newVersion);
         $config = new ConfigService($this->getDB());
+        // Older versions wrote cashback text into the method name and
+        // description; <fliz-checkout> owns that text now.
+        (new CashbackService($this->getDB(), $config))->syncPresentation();
         if ($config->getApiKey() === "") {
             return;
         }
+
+        // Updated shops get the hosted checkout text without re-saving.
+        // ensure() never throws on a failed fetch; it backs off instead.
+        (new PublicIdService($config))->ensure();
 
         $apiService = new FlizPayService($config->getApiKey());
         // Report the running plugin version on update.
