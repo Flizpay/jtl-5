@@ -8,15 +8,15 @@ use JTL\DB\DbInterface;
 use Plugin\flizpay\src\FlizPlugin;
 
 /**
- * Stores the cashback data from the FLIZpay backend and keeps the stored
- * payment method presentation (plain name, no description, logo) in sync with
- * the merchant's display settings.
+ * Keeps the stored payment method presentation in sync with the merchant's
+ * display settings: the plain name and empty shop description in
+ * tzahlungsartsprache, and the logo in tzahlungsart.cBild.
  *
  * The offer text itself comes from the hosted <fliz-checkout> component (see
  * CheckoutPresentationService). Manual renames of the method are overwritten
  * by design.
  */
-class CashbackService
+class PaymentOptionPresentationService
 {
     public const TITLE_PLAIN = "FLIZpay";
 
@@ -33,20 +33,11 @@ class CashbackService
     }
 
     /**
-     * @param array{first_purchase_amount: float, standard_amount: float}|null $cashback
-     */
-    public function update(?array $cashback): void
-    {
-        $this->config->setCashback($cashback);
-        $this->syncPresentation();
-    }
-
-    /**
      * Resets the method name to the plain "FLIZpay" and clears the shop
      * description in every language, and applies the logo setting.
      *
      * The offer text is rendered by the hosted <fliz-checkout> component, so
-     * nothing cashback-derived is written into tzahlungsartsprache anymore.
+     * nothing offer-derived is written into tzahlungsartsprache anymore.
      * Keeping the name exactly "FLIZpay" also lets JTL-Wawi match the method.
      */
     public function syncPresentation(): void
@@ -102,18 +93,5 @@ class CashbackService
                 (object) ["cBild" => ""],
             );
         }
-    }
-
-    /**
-     * Formats a provider percentage for checkout and admin presentation.
-     */
-    public function formatPercent(float $value, bool $german): string
-    {
-        $formatted = \rtrim(
-            \rtrim(\number_format($value, 2, ".", ""), "0"),
-            ".",
-        );
-
-        return $german ? \str_replace(".", ",", $formatted) : $formatted;
     }
 }

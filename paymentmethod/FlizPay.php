@@ -12,9 +12,9 @@ use JTL\Shop;
 use Plugin\flizpay\src\Api\FlizPayService;
 use Plugin\flizpay\src\FlizPlugin;
 use Plugin\flizpay\src\Service\ConfigService;
-use Plugin\flizpay\src\Service\CashbackService;
 use Plugin\flizpay\src\Service\ConnectionService;
 use Plugin\flizpay\src\Service\OrderService;
+use Plugin\flizpay\src\Service\PaymentOptionPresentationService;
 use Plugin\flizpay\src\Service\TransactionRepository;
 
 /**
@@ -111,7 +111,10 @@ class FlizPay extends Method
     public function preparePaymentProcess(Bestellung $order): void
     {
         $smarty = Shop::Smarty();
-        $smarty->assign("flizPaymentTitle", CashbackService::TITLE_PLAIN);
+        $smarty->assign(
+            "flizPaymentTitle",
+            PaymentOptionPresentationService::TITLE_PLAIN,
+        );
         $kBestellung = (int) $order->kBestellung;
         if ($kBestellung <= 0) {
             FlizPlugin::log(

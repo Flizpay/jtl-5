@@ -21,6 +21,7 @@ class ConfigService
     public const KEY_WEBHOOK_KEY = "webhook_key";
     public const KEY_WEBHOOK_URL = "webhook_url";
     public const KEY_WEBHOOK_ALIVE = "webhook_alive";
+    /** Written by versions before <fliz-checkout>; only deleted now. */
     public const KEY_CASHBACK = "cashback";
     public const KEY_REPORTED_VERSION = "reported_plugin_version";
     public const KEY_LAST_WEBHOOK_AT = "last_webhook_at";
@@ -79,42 +80,6 @@ class ConfigService
     public function getWebhookKey(): string
     {
         return (string) ($this->get(self::KEY_WEBHOOK_KEY) ?? "");
-    }
-
-    /**
-     * @return array{first_purchase_amount: float, standard_amount: float}|null
-     */
-    public function getCashback(): ?array
-    {
-        $raw = $this->get(self::KEY_CASHBACK);
-        if ($raw === null || $raw === "") {
-            return null;
-        }
-        $data = \json_decode($raw, true);
-        if (!\is_array($data)) {
-            return null;
-        }
-
-        return [
-            "first_purchase_amount" =>
-                (float) ($data["first_purchase_amount"] ?? 0),
-            "standard_amount" => (float) ($data["standard_amount"] ?? 0),
-        ];
-    }
-
-    public function setCashback(?array $cashback): void
-    {
-        $this->set(
-            self::KEY_CASHBACK,
-            $cashback === null
-                ? ""
-                : (string) \json_encode([
-                    "first_purchase_amount" =>
-                        (float) ($cashback["first_purchase_amount"] ?? 0),
-                    "standard_amount" =>
-                        (float) ($cashback["standard_amount"] ?? 0),
-                ]),
-        );
     }
 
     /**

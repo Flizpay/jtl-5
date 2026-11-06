@@ -14,7 +14,6 @@ use Plugin\flizpay\src\FlizPlugin;
  *   1. register the shop's webhook URL at FLIZpay (echo-verified)
  *   2. fetch the HMAC webhook key
  *   3. fetch the shop's public id (for the hosted <fliz-checkout> component)
- *   4. fetch the cashback configuration
  *
  * Any failure wipes the API key so misconfiguration is immediately visible.
  * FLIZpay then POSTs a {"test": ...} webhook out-of-band; receiving it flips
@@ -27,17 +26,13 @@ class ConnectionService
 
     private ConfigService $config;
 
-    private CashbackService $cashback;
-
     private PublicIdService $publicId;
 
     public function __construct(
         ?ConfigService $config = null,
-        ?CashbackService $cashback = null,
         ?PublicIdService $publicId = null,
     ) {
         $this->config = $config ?? new ConfigService();
-        $this->cashback = $cashback ?? new CashbackService(null, $this->config);
         $this->publicId = $publicId ?? new PublicIdService($this->config);
     }
 
@@ -166,9 +161,6 @@ class ConnectionService
         // The public id is optional for the handshake: without it the checkout
         // keeps the plain label, and the settings tab retries later.
         $this->publicId->ensure();
-
-        // Cashback is optional — a missing configuration must not fail the handshake.
-        $this->cashback->update($api->fetchCashback());
 
         FlizPlugin::log(
             "handshake completed, waiting for test webhook",

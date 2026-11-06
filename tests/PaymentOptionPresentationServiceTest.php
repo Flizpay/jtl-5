@@ -2,30 +2,22 @@
 
 declare(strict_types=1);
 
-use Plugin\flizpay\src\Service\CashbackService;
+use Plugin\flizpay\src\Service\PaymentOptionPresentationService;
 
-class CashbackServiceTest extends TestCase
+class PaymentOptionPresentationServiceTest extends TestCase
 {
-    public function testFormatsAdminDiscountPercentages(): void
-    {
-        $reflection = new ReflectionClass(CashbackService::class);
-        /** @var CashbackService $service */
-        $service = $reflection->newInstanceWithoutConstructor();
-
-        $this->assertSame("5", $service->formatPercent(5.0, false));
-        $this->assertSame("5.25", $service->formatPercent(5.25, false));
-        $this->assertSame("5,25", $service->formatPercent(5.25, true));
-    }
-
     public function testSyncWritesPlainNameAndNoDescription(): void
     {
-        // The offer text belongs to <fliz-checkout>; nothing cashback-derived
+        // The offer text belongs to <fliz-checkout>; nothing offer-derived
         // may be written into tzahlungsartsprache anymore.
         $source = \file_get_contents(
-            __DIR__ . "/../src/Service/CashbackService.php",
+            __DIR__ . "/../src/Service/PaymentOptionPresentationService.php",
         );
 
-        $this->assertSame('FLIZpay', CashbackService::TITLE_PLAIN);
+        $this->assertSame(
+            'FLIZpay',
+            PaymentOptionPresentationService::TITLE_PLAIN,
+        );
         $this->assertTrue(\str_contains($source, "cHinweisTextShop = :descr"));
         $this->assertTrue(\str_contains($source, '"descr" => "",'));
         $this->assertFalse(\str_contains($source, "previewTitle"));

@@ -14,9 +14,9 @@ use Plugin\flizpay\src\Controller\ReturnController;
 use Plugin\flizpay\src\Controller\StatusController;
 use Plugin\flizpay\src\Controller\WebhookController;
 use Plugin\flizpay\src\FlizPlugin;
-use Plugin\flizpay\src\Service\CashbackService;
 use Plugin\flizpay\src\Service\CheckoutPresentationService;
 use Plugin\flizpay\src\Service\ConfigService;
+use Plugin\flizpay\src\Service\PaymentOptionPresentationService;
 use Plugin\flizpay\src\Service\PublicIdService;
 use Plugin\flizpay\src\Admin\SettingsTab;
 
@@ -90,8 +90,9 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
     public function installed()
     {
         parent::installed();
-        $cashbackService = new CashbackService($this->getDB());
-        $cashbackService->syncPresentation();
+        (new PaymentOptionPresentationService(
+            $this->getDB(),
+        ))->syncPresentation();
     }
 
     public function enabled()
@@ -110,9 +111,14 @@ class Bootstrap extends Bootstrapper implements BootstrapperInterface
     {
         parent::updated($oldVersion, $newVersion);
         $config = new ConfigService($this->getDB());
-        // Older versions wrote cashback text into the method name and
+        // Older versions wrote offer text into the method name and
         // description; <fliz-checkout> owns that text now.
-        (new CashbackService($this->getDB(), $config))->syncPresentation();
+        (new PaymentOptionPresentationService(
+            $this->getDB(),
+            $config,
+        ))->syncPresentation();
+        // Nothing reads the cashback rates the old admin panel displayed.
+        $config->delete(ConfigService::KEY_CASHBACK);
         if ($config->getApiKey() === "") {
             return;
         }
