@@ -10,11 +10,11 @@ use JTL\Plugin\PluginInterface;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\flizpay\src\FlizPlugin;
-use Plugin\flizpay\src\Service\CashbackService;
 use Plugin\flizpay\src\Service\CheckoutWidget;
 use Plugin\flizpay\src\Service\ConfigService;
 use Plugin\flizpay\src\Service\ConnectionService;
 use Plugin\flizpay\src\Service\Logger;
+use Plugin\flizpay\src\Service\PaymentOptionPresentationService;
 use Plugin\flizpay\src\Service\PublicIdService;
 
 /**
@@ -53,11 +53,7 @@ class SettingsTab
     public function render(JTLSmarty $smarty): string
     {
         $messages = $this->handleAction();
-        $cashbackService = new CashbackService($this->db, $this->config);
-        $cashback = $this->config->getCashback();
         $germanAdmin = $this->isGermanAdmin();
-        $firstPurchaseDiscount = (float) ($cashback["first_purchase_amount"] ?? 0);
-        $standardDiscount = (float) ($cashback["standard_amount"] ?? 0);
 
         $apiKey = $this->config->getApiKey();
         // Recovers from an earlier failed fetch; throttled so a FLIZpay outage
@@ -133,29 +129,7 @@ class SettingsTab
                     self::formatSampleAmount($previewLocale),
                 ),
             )
-             ->assign(
-                 "flizFirstPurchaseDiscount",
-                 $firstPurchaseDiscount > 0
-                     ? $cashbackService->formatPercent(
-                         $firstPurchaseDiscount,
-                         $germanAdmin,
-                     )
-                     : "",
-             )
-             ->assign(
-                 "flizStandardDiscount",
-                 $standardDiscount > 0
-                     ? $cashbackService->formatPercent(
-                         $standardDiscount,
-                         $germanAdmin,
-                     )
-                     : "",
-             )
-             ->assign(
-                 "flizHasDiscount",
-                 $firstPurchaseDiscount > 0 || $standardDiscount > 0,
-             )
-             ->assign("flizAwaitingTest", $awaitingTest)
+            ->assign("flizAwaitingTest", $awaitingTest)
             ->fetch($this->getTemplatePath());
     }
 
@@ -260,8 +234,10 @@ class SettingsTab
         $messages = [
             ["type" => "success", "text" => \d__("flizpay", "Settings saved.")],
         ];
-        $cashbackService = new CashbackService($this->db, $this->config);
-        $cashbackService->syncPresentation();
+        (new PaymentOptionPresentationService(
+            $this->db,
+            $this->config,
+        ))->syncPresentation();
 
         $connectionService = new ConnectionService($this->config);
         $result = $connectionService->onSettingsSaved(

@@ -27,14 +27,18 @@ class LocalizationTest extends TestCase
         $this->assertTrue(\is_file(__DIR__ . '/../locale/en-US/base.mo'));
     }
 
-    public function testCatalogsContainDiscountInformationCardTranslations(): void
+    public function testCatalogsDroppedTheDiscountInformationCard(): void
     {
+        // The card is gone; <fliz-checkout> shows the current rates instead.
         foreach (['de-DE', 'en-GB', 'en-US'] as $locale) {
             $catalog = (string)\file_get_contents(__DIR__ . '/../locale/' . $locale . '/base.po');
 
-            $this->assertTrue(\str_contains($catalog, 'msgid "Discount Information"'));
-            $this->assertTrue(\str_contains($catalog, 'msgid "Current Discount Rates:"'));
-            $this->assertTrue(\str_contains($catalog, 'msgid "First Purchase"'));
+            $this->assertFalse(\str_contains($catalog, 'msgid "Discount Information"'));
+            $this->assertFalse(\str_contains($catalog, 'msgid "Current Discount Rates:"'));
+            $this->assertFalse(\str_contains($catalog, 'msgid "First Purchase"'));
+            $this->assertFalse(\str_contains($catalog, 'msgid "Configure discount rates in your"'));
+            // Still used by the welcome card.
+            $this->assertTrue(\str_contains($catalog, 'msgid "FLIZpay Dashboard"'));
         }
     }
 

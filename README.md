@@ -23,7 +23,7 @@ name matches the `<PluginID>` in `info.xml`, from which JTL derives the
 | `Bootstrap.php` | Hooks, routes, and plugin lifecycle |
 | `paymentmethod/FlizPay.php` | Payment method and checkout flow |
 | `src/Api/` | FLIZpay HTTP client and API operations |
-| `src/Service/` | Payment processing, orders, discounts, cashback, and configuration |
+| `src/Service/` | Payment processing, orders, discounts, and configuration |
 | `src/Controller/` | Webhook, return, and status endpoints |
 | `Migrations/` | Database schema |
 | `tests/` | Logic tests without shop or Composer dependencies |

@@ -6,9 +6,7 @@ namespace Plugin\flizpay\src\Controller;
 
 use JTL\Smarty\JTLSmarty;
 use Laminas\Diactoros\Response\JsonResponse;
-use Plugin\flizpay\src\Api\FlizPayService;
 use Plugin\flizpay\src\FlizPlugin;
-use Plugin\flizpay\src\Service\CashbackService;
 use Plugin\flizpay\src\Service\ConfigService;
 use Plugin\flizpay\src\Service\SettlementService;
 use Plugin\flizpay\src\Util\SignatureVerifier;
@@ -91,22 +89,11 @@ class WebhookController
             return self::success(["alive" => true]);
         }
 
-        // live cashback update pushed from the FLIZ merchant app
+        // Legacy cashback update from the FLIZ merchant app: the offer text now
+        // comes from <fliz-checkout>, so it is only acknowledged — never stored
+        // and never routed to settlement.
         if ($type === "cashback") {
-            $normalized = FlizPayService::normalizeCashbackEntry($decoded);
-            if ($normalized === null) {
-                FlizPlugin::debug("webhook: cashback update rejected", [
-                    "http" => 400,
-                ]);
-
-                return self::error("Missing cashback information", 400);
-            }
-
-            (new CashbackService(null, $config))->update($normalized);
-            FlizPlugin::debug("webhook: cashback updated", [
-                "firstPurchaseAmount" => $normalized["first_purchase_amount"],
-                "amount" => $normalized["standard_amount"],
-            ]);
+            FlizPlugin::debug("webhook: cashback update ignored");
 
             return self::success("Cashback information updated");
         }
