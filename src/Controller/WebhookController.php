@@ -86,7 +86,11 @@ class WebhookController
                 \LOGLEVEL_NOTICE,
             );
 
-            return self::success(["alive" => true]);
+            return self::success([
+                "alive" => true,
+                "pluginVersion" => FlizPlugin::getVersion(),
+                "platformVersion" => \APPLICATION_VERSION,
+            ]);
         }
 
         // Legacy cashback update from the FLIZ merchant app: the offer text now
