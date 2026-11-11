@@ -39,6 +39,7 @@ class FlizPayClient
             "Content-type: application/json",
             "x-api-key: " . $this->apiKey,
             "X-FLIZpay-Plugin-Version: " . FlizPlugin::getVersion(),
+            "X-FLIZpay-Platform-Version: " . \APPLICATION_VERSION,
         ];
         foreach ($extraHeaders as $name => $value) {
             $headers[] = $name . ": " . $value;
